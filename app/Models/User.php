@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -22,7 +23,42 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'student_id',
+        'staff_id',
+        'phone',
     ];
+
+    public const ROLE_STUDENT = 'student';
+    public const ROLE_ADVISOR = 'advisor';
+    public const ROLE_COORDINATOR = 'coordinator';
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            $user->qr_token ??= Str::random(40);
+        });
+    }
+
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->role === self::ROLE_STUDENT;
+    }
+
+    public function isAdvisor(): bool
+    {
+        return $this->role === self::ROLE_ADVISOR;
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === self::ROLE_COORDINATOR;
+    }
 
     /**
      * The attributes that should be hidden for serialization.
