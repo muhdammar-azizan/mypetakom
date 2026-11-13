@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Event;
+use App\Models\EventCommittee;
 use App\Models\Membership;
 use App\Models\MeritApplication;
+use App\Models\MeritClaim;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +20,47 @@ class DashboardController extends Controller
         return match ($request->user()->role) {
             User::ROLE_COORDINATOR => $this->coordinator(),
             User::ROLE_ADVISOR => $this->advisor($request->user()),
+            User::ROLE_STUDENT => $this->student($request->user()),
             default => view('dashboard.default'),
         };
+    }
+
+    private function student(User $student): View
+    {
+        $summary = MeritController::summary($student);
+        $merits = $summary['merits'];
+        $semesters = $summary['semesters'];
+
+        // Points by event level
+        $byLevel = $merits->groupBy(fn ($m) => $m->event->level)->map->sum('points');
+        $levelLabels = array_values(Event::LEVELS);
+        $levelValues = array_map(fn ($key) => (int) ($byLevel[$key] ?? 0), array_keys(Event::LEVELS));
+
+        $claimCounts = MeritClaim::where('user_id', $student->id)->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
+
+        return view('dashboard.student', [
+            'membership' => $student->membership,
+            'tiles' => [
+                ['Total merit', $summary['total'], 'award'],
+                ['Events with merit', $merits->count(), 'calendar'],
+                ['Event check-ins', Attendance::where('user_id', $student->id)->count(), 'check'],
+                ['Committee roles', EventCommittee::where('user_id', $student->id)->count(), 'users'],
+            ],
+            'semesterLabels' => $semesters->map(fn ($s) => $s['academic_year'].' S'.$s['semester'])->all(),
+            'semesterValues' => $semesters->pluck('cumulative')->all(),
+            'levelLabels' => $levelLabels,
+            'levelValues' => $levelValues,
+            'upcoming' => EventCommittee::with('event')->where('user_id', $student->id)
+                ->whereHas('event', fn ($q) => $q->whereIn('status', ['active', 'postponed'])->where('starts_at', '>=', now()))
+                ->get()->sortBy(fn ($c) => $c->event->starts_at)->take(4),
+            'recentMerits' => $merits->take(5),
+            'claimCounts' => [
+                'draft' => $claimCounts[MeritClaim::DRAFT] ?? 0,
+                'submitted' => $claimCounts[MeritClaim::SUBMITTED] ?? 0,
+                'approved' => $claimCounts[MeritClaim::APPROVED] ?? 0,
+                'rejected' => $claimCounts[MeritClaim::REJECTED] ?? 0,
+            ],
+        ]);
     }
 
     private function advisor(User $advisor): View
