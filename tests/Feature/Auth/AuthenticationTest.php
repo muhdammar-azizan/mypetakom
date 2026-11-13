@@ -22,7 +22,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->post('/login', [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'password',
         ]);
 
@@ -30,12 +30,30 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
+    public function test_users_can_log_in_with_student_id(): void
+    {
+        $user = User::factory()->create(['student_id' => 'CB12345']);
+
+        $this->post('/login', ['login' => 'cb12345', 'password' => 'password']);
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_staff_can_log_in_with_staff_id(): void
+    {
+        $user = User::factory()->advisor()->create(['staff_id' => 'S9999']);
+
+        $this->post('/login', ['login' => 'S9999', 'password' => 'password']);
+
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();
 
         $this->post('/login', [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'wrong-password',
         ]);
 
