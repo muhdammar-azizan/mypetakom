@@ -9,6 +9,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\MeritApplicationController;
+use App\Http\Controllers\MeritClaimController;
+use App\Http\Controllers\MeritController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,9 @@ Route::get('/dashboard', DashboardController::class)->middleware('auth')->name('
 
 // Public event information page (target of the event QR code)
 Route::get('/e/{token}', [EventController::class, 'publicShow'])->name('events.public');
+
+// Student QR: public identity + merit page
+Route::get('/qr/{token}', [MeritController::class, 'publicShow'])->name('merit.qr');
 
 // Student check-in (public page: the student proves identity with student ID + password)
 Route::get('/checkin/{token}', [CheckInController::class, 'show'])->name('checkin.show');
@@ -38,6 +43,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [MembershipController::class, 'index'])->name('index');
         Route::post('/', [MembershipController::class, 'store'])->name('store');
         Route::delete('/', [MembershipController::class, 'destroy'])->name('destroy');
+    });
+
+    // Student merit + claims (Module 4)
+    Route::middleware('role:student')->group(function () {
+        Route::get('/merit', [MeritController::class, 'index'])->name('merit.index');
+        Route::get('/merit-claims/create', [MeritClaimController::class, 'create'])->name('merit-claims.create');
+        Route::post('/merit-claims', [MeritClaimController::class, 'store'])->name('merit-claims.store');
+        Route::get('/merit-claims/{claim}/edit', [MeritClaimController::class, 'edit'])->name('merit-claims.edit');
+        Route::put('/merit-claims/{claim}', [MeritClaimController::class, 'update'])->name('merit-claims.update');
+        Route::delete('/merit-claims/{claim}', [MeritClaimController::class, 'destroy'])->name('merit-claims.destroy');
+        Route::post('/merit-claims/{claim}/submit', [MeritClaimController::class, 'submit'])->name('merit-claims.submit');
+    });
+    Route::middleware('role:student,advisor')->get('/merit-claims', [MeritClaimController::class, 'index'])->name('merit-claims.index');
+    Route::get('/merit-claims/{claim}', [MeritClaimController::class, 'show'])->name('merit-claims.show')->whereNumber('claim');
+    Route::get('/merit-claims/{claim}/letter', [MeritClaimController::class, 'letter'])->name('merit-claims.letter');
+    Route::middleware('role:advisor')->group(function () {
+        Route::post('/merit-claims/{claim}/approve', [MeritClaimController::class, 'approve'])->name('merit-claims.approve');
+        Route::post('/merit-claims/{claim}/reject', [MeritClaimController::class, 'reject'])->name('merit-claims.reject');
     });
 
     // Events: advisors manage their own, coordinators browse all, students see their committee roles

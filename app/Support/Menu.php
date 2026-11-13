@@ -37,6 +37,7 @@ class Menu
                 ['Membership', 'users', 'membership.index'],
                 ['My Events', 'calendar', 'my-events.index'],
                 ['Merit', 'award', 'merit.index'],
+                ['Merit Claims', 'file', 'merit-claims.index'],
             ],
         };
 

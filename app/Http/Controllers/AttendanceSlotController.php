@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\AttendanceSlot;
 use App\Models\Event;
+use App\Services\MeritService;
 use App\Support\Qr;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,7 @@ class AttendanceSlotController extends Controller
         abort_unless($record->attendance_slot_id === $slot->id, 404);
 
         $record->delete();
+        MeritService::sync($slot->event);
 
         return back()->with('toast', 'Check-in removed.');
     }

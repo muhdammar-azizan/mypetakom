@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceSlot;
 use App\Models\Membership;
 use App\Models\User;
+use App\Services\MeritService;
 use App\Support\Geo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -75,6 +76,8 @@ class CheckInController extends Controller
             'distance_m' => $distance,
             'checked_in_at' => now(),
         ]);
+
+        MeritService::sync($event);
 
         return redirect()->route('checkin.show', $token)->with('checkin', [
             'name' => $student->name,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\MeritApplication;
+use App\Services\MeritService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -96,7 +97,9 @@ class MeritApplicationController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application approved.');
+        MeritService::sync($application->event);
+
+        return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application approved. Merit awarded to the committee and participants.');
     }
 
     public function reject(Request $request, MeritApplication $application): RedirectResponse
@@ -109,6 +112,8 @@ class MeritApplicationController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+
+        MeritService::sync($application->event);
 
         return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application rejected.');
     }

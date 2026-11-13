@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventCommittee;
 use App\Models\Membership;
 use App\Models\User;
+use App\Services\MeritService;
 use App\Support\Qr;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,7 @@ class EventController extends Controller
         unset($data['approval_letter']);
 
         $event->update($data);
+        MeritService::sync($event);
 
         return redirect()->route('events.show', $event)->with('toast', 'Event updated.');
     }
@@ -143,6 +145,8 @@ class EventController extends Controller
             'position_title' => $data['position_title'] ?? null,
         ]);
 
+        MeritService::sync($event);
+
         return back()->with('toast', 'Committee member added.');
     }
 
@@ -152,6 +156,7 @@ class EventController extends Controller
         abort_unless($member->event_id === $event->id, 404);
 
         $member->delete();
+        MeritService::sync($event);
 
         return back()->with('toast', 'Committee member removed.');
     }

@@ -77,6 +77,20 @@ class ReportController extends Controller
                 'SELECT e.title, COUNT(DISTINCT s.id) AS slots, COUNT(a.id) AS check_ins, COUNT(DISTINCT a.user_id) AS students FROM events e JOIN attendance_slots s ON s.event_id = e.id LEFT JOIN attendances a ON a.attendance_slot_id = s.id GROUP BY e.id, e.title ORDER BY check_ins DESC',
                 ['title' => 'Event', 'slots' => 'Slots', 'check_ins' => 'Check-ins', 'students' => 'Unique students'],
             ),
+            $this->report(
+                'Module 4 - Merit',
+                'Merit awarded per semester',
+                'Single table: merit rows and total points for each academic year and semester.',
+                'SELECT academic_year, semester, COUNT(*) AS entries, SUM(points) AS points FROM merits GROUP BY academic_year, semester ORDER BY academic_year DESC, semester DESC',
+                ['academic_year' => 'Academic year', 'semester' => 'Semester', 'entries' => 'Entries', 'points' => 'Total points'],
+            ),
+            $this->report(
+                'Module 4 - Merit',
+                'Top students by merit',
+                'Join (merits + users): the ten students with the most merit points.',
+                'SELECT u.name, u.student_id, COUNT(m.id) AS events, SUM(m.points) AS points FROM merits m JOIN users u ON u.id = m.user_id GROUP BY u.id, u.name, u.student_id ORDER BY points DESC LIMIT 10',
+                ['name' => 'Student', 'student_id' => 'Student ID', 'events' => 'Events', 'points' => 'Total points'],
+            ),
         ];
     }
 

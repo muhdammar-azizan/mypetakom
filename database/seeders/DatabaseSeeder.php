@@ -7,6 +7,8 @@ use App\Models\AttendanceSlot;
 use App\Models\Event;
 use App\Models\Membership;
 use App\Models\MeritApplication;
+use App\Models\MeritClaim;
+use App\Services\MeritService;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -41,6 +43,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedMemberships($coordinator);
         $this->seedEvents($advisor, $coordinator);
+        $this->seedClaims($advisor);
     }
 
     private function seedMemberships(User $coordinator): void
@@ -127,7 +130,36 @@ class DatabaseSeeder extends Seeder
                     'reviewed_by' => $state === 'pending' ? null : $coordinator->id,
                     'reviewed_at' => $state === 'pending' ? null : now(),
                 ]);
+
+                MeritService::sync($event);
             }
+        }
+    }
+
+    /** A few claims in different states, for the demo advisor to review. */
+    private function seedClaims(User $advisor): void
+    {
+        $letter = $this->sampleCard();
+        $event = Event::where('advisor_id', $advisor->id)->where('title', 'National Hackathon 2026')->first();
+        $members = User::whereHas('membership', fn ($q) => $q->where('status', Membership::APPROVED))
+            ->whereDoesntHave('merits', fn ($q) => $q->where('event_id', $event->id))->get();
+
+        foreach (['pending', 'submitted', 'submitted', 'rejected'] as $i => $status) {
+            if (! isset($members[$i])) {
+                break;
+            }
+
+            MeritClaim::create([
+                'user_id' => $members[$i]->id,
+                'event_id' => $event->id,
+                'role' => 'participant',
+                'reason' => 'I attended the hackathon but my check-in was not recorded.',
+                'letter_path' => $letter,
+                'status' => $status,
+                'remarks' => $status === 'rejected' ? 'The attached letter is unreadable.' : null,
+                'reviewed_by' => $status === 'rejected' ? $advisor->id : null,
+                'reviewed_at' => $status === 'rejected' ? now() : null,
+            ]);
         }
     }
 
