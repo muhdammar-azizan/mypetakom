@@ -8,8 +8,9 @@ use App\Models\Event;
 use App\Models\Membership;
 use App\Models\MeritApplication;
 use App\Models\MeritClaim;
-use App\Services\MeritService;
 use App\Models\User;
+use App\Notifications\Notice;
+use App\Services\MeritService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,7 +36,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Demo student has no membership yet, so the application flow can be tried.
-        User::factory()->create([
+        $demoStudent = User::factory()->create([
             'name' => 'Demo Student',
             'email' => 'student@petakom.test',
             'student_id' => 'CB00001',
@@ -44,6 +45,11 @@ class DatabaseSeeder extends Seeder
         $this->seedMemberships($coordinator);
         $this->seedEvents($advisor, $coordinator);
         $this->seedClaims($advisor);
+
+        // A few notifications so the bell is not empty in the demo.
+        Notice::send($coordinator, 'New membership application', 'A student submitted a student card for review.', route('members.index'));
+        Notice::send($advisor, 'New merit claim', 'A student claimed merit for an event you advise.', route('merit-claims.index'));
+        Notice::send($demoStudent, 'Welcome to MyPetakom', 'Apply for membership to join events and earn merit.', route('membership.index'));
     }
 
     private function seedMemberships(User $coordinator): void

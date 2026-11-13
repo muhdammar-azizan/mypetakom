@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\MeritApplication;
+use App\Models\User;
+use App\Notifications\Notice;
 use App\Services\MeritService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -72,6 +74,13 @@ class MeritApplicationController extends Controller
             'reviewed_at' => null,
         ]);
 
+        Notice::send(
+            User::where('role', User::ROLE_COORDINATOR)->get(),
+            'New merit application',
+            '"'.$event->title.'" is waiting for merit review.',
+            route('merit-applications.show', $event->meritApplication()->first()),
+        );
+
         return back()->with('toast', 'Merit application submitted.');
     }
 
@@ -98,6 +107,7 @@ class MeritApplicationController extends Controller
         ]);
 
         MeritService::sync($application->event);
+        Notice::send($application->event->advisor, 'Merit application approved', '"'.$application->event->title.'" was approved. Merit has been awarded.', route('events.show', $application->event));
 
         return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application approved. Merit awarded to the committee and participants.');
     }
@@ -114,6 +124,7 @@ class MeritApplicationController extends Controller
         ]);
 
         MeritService::sync($application->event);
+        Notice::send($application->event->advisor, 'Merit application rejected', '"'.$application->event->title.'": '.$data['remarks'], route('events.show', $application->event));
 
         return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application rejected.');
     }

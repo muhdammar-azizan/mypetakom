@@ -11,6 +11,7 @@ use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\MeritApplicationController;
 use App\Http\Controllers\MeritClaimController;
 use App\Http\Controllers\MeritController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,10 @@ Route::get('/checkin/{token}', [CheckInController::class, 'show'])->name('checki
 Route::post('/checkin/{token}', [CheckInController::class, 'store'])->middleware('throttle:20,1')->name('checkin.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');

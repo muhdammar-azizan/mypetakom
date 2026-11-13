@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Membership;
+use App\Notifications\Notice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -45,6 +46,8 @@ class MemberController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        Notice::send($membership->user, 'Membership approved', 'You are now a Petakom member. You can join events and earn merit.', route('membership.index'));
+
         return redirect()->route('members.show', $membership)->with('toast', 'Membership approved.');
     }
 
@@ -58,6 +61,8 @@ class MemberController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+
+        Notice::send($membership->user, 'Membership rejected', $data['remarks'], route('membership.index'));
 
         return redirect()->route('members.show', $membership)->with('toast', 'Membership rejected.');
     }

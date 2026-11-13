@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Membership;
+use App\Models\User;
+use App\Notifications\Notice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -44,6 +46,14 @@ class MembershipController extends Controller
                 'reviewed_by' => null,
                 'reviewed_at' => null,
             ],
+        );
+
+        $saved = $request->user()->membership()->first();
+        Notice::send(
+            User::where('role', User::ROLE_COORDINATOR)->get(),
+            'New membership application',
+            $request->user()->name.' submitted a student card for review.',
+            route('members.show', $saved),
         );
 
         return redirect()->route('membership.index')->with('toast', 'Membership application submitted.');

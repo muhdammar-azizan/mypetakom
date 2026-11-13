@@ -75,10 +75,46 @@
 
                     <div class="flex-1"></div>
 
-                    <button type="button" aria-label="Notifications"
-                            class="relative w-11 h-11 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:-translate-y-0.5 transition">
-                        <x-icon name="bell" />
-                    </button>
+                    @php
+                        $unread = $user->unreadNotifications()->count();
+                        $latest = $user->notifications()->limit(5)->get();
+                    @endphp
+                    <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false" class="relative">
+                        <button type="button" @click="open = ! open" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}" :aria-expanded="open"
+                                class="relative w-11 h-11 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:-translate-y-0.5 transition">
+                            <x-icon name="bell" />
+                            @if ($unread)
+                                <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-600 text-white text-[10.5px] font-bold flex items-center justify-center">{{ $unread > 9 ? '9+' : $unread }}</span>
+                            @endif
+                        </button>
+
+                        <div x-show="open" x-transition style="display:none"
+                             class="absolute right-0 top-14 w-[min(22rem,calc(100vw-2rem))] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                                <span class="font-head font-semibold text-sm text-slate-900">Notifications</span>
+                                @if ($unread)
+                                    <form method="POST" action="{{ route('notifications.read-all') }}">@csrf
+                                        <button class="text-xs font-semibold text-brand-600 hover:underline">Mark all as read</button>
+                                    </form>
+                                @endif
+                            </div>
+                            @forelse ($latest as $n)
+                                <form method="POST" action="{{ route('notifications.read', $n->id) }}">@csrf
+                                    <button class="w-full text-left px-4 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 flex gap-2.5">
+                                        <span class="mt-1.5 w-2 h-2 rounded-full shrink-0 {{ $n->read_at ? 'bg-transparent' : 'bg-brand-600' }}"></span>
+                                        <span class="min-w-0">
+                                            <span class="block text-[13px] {{ $n->read_at ? 'text-slate-700' : 'font-semibold text-slate-900' }}">{{ $n->data['title'] }}</span>
+                                            <span class="block text-xs text-slate-500 truncate">{{ $n->data['body'] }}</span>
+                                            <span class="block text-[11px] text-slate-400 mt-0.5">{{ $n->created_at->diffForHumans() }}</span>
+                                        </span>
+                                    </button>
+                                </form>
+                            @empty
+                                <p class="px-4 py-8 text-center text-sm text-slate-500">No notifications yet.</p>
+                            @endforelse
+                            <a href="{{ route('notifications.index') }}" class="block px-4 py-2.5 text-center text-[13px] font-semibold text-brand-600 bg-slate-50 hover:bg-slate-100">View all</a>
+                        </div>
+                    </div>
 
                     <div x-data="{ open: false }" @click.outside="open = false" class="relative pl-3 border-l border-slate-200">
                         <button type="button" @click="open = ! open" class="flex items-center gap-2.5 min-h-[44px] p-1 hover:-translate-y-0.5 transition focus:outline-none">

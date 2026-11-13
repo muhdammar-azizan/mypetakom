@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\Notice;
 use App\Models\Event;
 use App\Models\Membership;
 use App\Models\Merit;
@@ -114,6 +115,8 @@ class MeritClaimController extends Controller
 
         $claim->update(['status' => MeritClaim::SUBMITTED, 'remarks' => null, 'reviewed_by' => null, 'reviewed_at' => null]);
 
+        Notice::send($claim->event->advisor, 'New merit claim', $claim->user->name.' claimed merit for "'.$claim->event->title.'".', route('merit-claims.show', $claim));
+
         return redirect()->route('merit-claims.show', $claim)->with('toast', 'Claim submitted to the event advisor.');
     }
 
@@ -123,6 +126,8 @@ class MeritClaimController extends Controller
 
         $claim->update(['status' => MeritClaim::APPROVED, 'remarks' => null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
         MeritService::awardClaim($claim->load('event'));
+
+        Notice::send($claim->user, 'Merit claim approved', 'Merit for "'.$claim->event->title.'" was added to your account.', route('merit-claims.show', $claim));
 
         return redirect()->route('merit-claims.show', $claim)->with('toast', 'Claim approved. Merit has been awarded.');
     }
@@ -134,6 +139,8 @@ class MeritClaimController extends Controller
         $data = $request->validate(['remarks' => ['required', 'string', 'max:500']]);
 
         $claim->update(['status' => MeritClaim::REJECTED, 'remarks' => $data['remarks'], 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
+
+        Notice::send($claim->user, 'Merit claim rejected', $data['remarks'], route('merit-claims.show', $claim));
 
         return redirect()->route('merit-claims.show', $claim)->with('toast', 'Claim rejected.');
     }
