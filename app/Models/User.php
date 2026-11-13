@@ -45,6 +45,21 @@ class User extends Authenticatable
         return in_array($this->role, $roles, true);
     }
 
+    public function getRoleLabelAttribute(): string
+    {
+        return match ($this->role) {
+            self::ROLE_ADVISOR => 'Event Advisor',
+            self::ROLE_COORDINATOR => 'Petakom Coordinator',
+            default => 'Student',
+        };
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        return Str::of($this->name)->explode(' ')->filter()->take(2)
+            ->map(fn ($w) => Str::upper(Str::substr($w, 0, 1)))->implode('');
+    }
+
     public function isStudent(): bool
     {
         return $this->role === self::ROLE_STUDENT;

@@ -1,17 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+<x-app-layout title="Dashboard">
+    <x-slot name="header">Dashboard</x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-card>
+        <p class="font-head text-lg font-bold text-slate-900">Welcome, {{ auth()->user()->name }}</p>
+        <p class="mt-1 text-sm text-slate-500">
+            You are logged in as <x-badge color="{{ auth()->user()->isCoordinator() ? 'solid' : (auth()->user()->isAdvisor() ? 'gold' : 'brand') }}">{{ auth()->user()->role_label }}</x-badge>.
+        </p>
+    </x-card>
 </x-app-layout>
