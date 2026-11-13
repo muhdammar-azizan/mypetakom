@@ -19,6 +19,7 @@ class Menu
             User::ROLE_COORDINATOR => [
                 ['Dashboard', 'home', 'dashboard'],
                 ['Members', 'users', 'members.index'],
+                ['User Accounts', 'settings', 'users.index'],
                 ['Events', 'calendar', 'events.index'],
                 ['Merit Applications', 'file', 'merit-applications.index'],
                 ['Reports', 'chart', 'reports.index'],

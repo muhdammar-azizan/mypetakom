@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -34,6 +35,7 @@ class User extends Authenticatable
         'alt_email',
         'avatar_path',
         'last_login_at',
+        'deactivated_at',
     ];
 
     public const ROLE_STUDENT = 'student';
@@ -83,6 +85,16 @@ class User extends Authenticatable
             ->map(fn ($w) => Str::upper(Str::substr($w, 0, 1)))->implode('');
     }
 
+    public function membership(): HasOne
+    {
+        return $this->hasOne(Membership::class);
+    }
+
+    public function isDeactivated(): bool
+    {
+        return $this->deactivated_at !== null;
+    }
+
     public function isStudent(): bool
     {
         return $this->role === self::ROLE_STUDENT;
@@ -118,6 +130,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'deactivated_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

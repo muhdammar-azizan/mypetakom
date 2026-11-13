@@ -67,6 +67,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()->isDeactivated()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'login' => 'This account has been deactivated. Contact the Petakom Coordinator.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
