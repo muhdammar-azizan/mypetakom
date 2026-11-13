@@ -3,21 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Support\Qr;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile.
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'qrSvg' => $user->isStudent() ? Qr::svg(url('/qr/'.$user->qr_token), 400) : null,
         ]);
     }
 
@@ -26,35 +30,50 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('toast', 'Profile updated.');
     }
 
     /**
-     * Delete the user's account.
+     * Upload or replace the profile photo.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function updateAvatar(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = $request->user();
 
-        Auth::logout();
+        if ($user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
 
-        $user->delete();
+        $user->update(['avatar_path' => $request->file('avatar')->store('avatars', 'public')]);
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        return Redirect::route('profile.edit')->with('toast', 'Profile photo updated.');
+    }
 
-        return Redirect::to('/');
+    /**
+     * Remove the profile photo.
+     */
+    public function destroyAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+            $user->update(['avatar_path' => null]);
+        }
+
+        return Redirect::route('profile.edit')->with('toast', 'Profile photo removed.');
     }
 }

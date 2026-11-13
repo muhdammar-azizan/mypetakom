@@ -31,6 +31,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'student',
             'student_id' => 'CB'.fake()->unique()->numerify('#####'),
+            'programme' => 'BCS (Software Engineering)',
             'remember_token' => Str::random(10),
         ];
     }

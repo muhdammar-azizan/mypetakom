@@ -16,12 +16,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'Petakom Coordinator',
             'email' => 'coordinator@petakom.test',
             'staff_id' => 'S0001',
+            'programme' => 'Faculty of Computing',
         ]);
 
         User::factory()->advisor()->create([
             'name' => 'Event Advisor',
             'email' => 'advisor@petakom.test',
             'staff_id' => 'S0002',
+            'programme' => 'BCS (Software Engineering)',
         ]);
 
         User::factory()->create([

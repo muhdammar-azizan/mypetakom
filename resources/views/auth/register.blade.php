@@ -18,6 +18,12 @@
         </div>
 
         <div>
+            <x-input-label for="programme" value="Programme" />
+            <x-text-input id="programme" class="block w-full" type="text" name="programme" :value="old('programme')" required placeholder="BCS (Software Engineering)" />
+            <x-input-error :messages="$errors->get('programme')" class="mt-2" />
+        </div>
+
+        <div>
             <x-input-label for="email" value="Email" />
             <x-text-input id="email" class="block w-full" type="email" name="email" :value="old('email')" required autocomplete="username" placeholder="studentid@adab.umpsa.edu.my" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />

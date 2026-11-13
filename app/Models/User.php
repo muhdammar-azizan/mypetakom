@@ -27,6 +27,13 @@ class User extends Authenticatable
         'student_id',
         'staff_id',
         'phone',
+        'programme',
+        'emergency_name',
+        'emergency_phone',
+        'address',
+        'alt_email',
+        'avatar_path',
+        'last_login_at',
     ];
 
     public const ROLE_STUDENT = 'student';
@@ -52,6 +59,22 @@ class User extends Authenticatable
             self::ROLE_COORDINATOR => 'Petakom Coordinator',
             default => 'Student',
         };
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_path ? asset('storage/'.$this->avatar_path) : null;
+    }
+
+    /** The personal ID shown on the profile: student ID or staff ID. */
+    public function getIdLabelAttribute(): string
+    {
+        return $this->isStudent() ? 'Student ID' : 'Staff ID';
+    }
+
+    public function getIdValueAttribute(): ?string
+    {
+        return $this->isStudent() ? $this->student_id : $this->staff_id;
     }
 
     public function getInitialsAttribute(): string
@@ -94,6 +117,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
