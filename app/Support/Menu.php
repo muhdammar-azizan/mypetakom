@@ -22,6 +22,7 @@ class Menu
                 ['User Accounts', 'settings', 'users.index'],
                 ['Events', 'calendar', 'events.index'],
                 ['Merit Applications', 'file', 'merit-applications.index'],
+                ['Attendance', 'clipboard', 'attendance.index'],
                 ['Reports', 'chart', 'reports.index'],
             ],
             User::ROLE_ADVISOR => [

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AttendanceSlotController;
+use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\Coordinator\MemberController;
 use App\Http\Controllers\Coordinator\ReportController;
 use App\Http\Controllers\Coordinator\UserController;
@@ -18,6 +20,10 @@ Route::get('/dashboard', DashboardController::class)->middleware('auth')->name('
 
 // Public event information page (target of the event QR code)
 Route::get('/e/{token}', [EventController::class, 'publicShow'])->name('events.public');
+
+// Student check-in (public page: the student proves identity with student ID + password)
+Route::get('/checkin/{token}', [CheckInController::class, 'show'])->name('checkin.show');
+Route::post('/checkin/{token}', [CheckInController::class, 'store'])->middleware('throttle:20,1')->name('checkin.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -48,6 +54,20 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/events/{event}/merit-application', [MeritApplicationController::class, 'store'])->name('events.merit.store');
         Route::delete('/events/{event}/merit-application', [MeritApplicationController::class, 'destroy'])->name('events.merit.destroy');
+    });
+
+    // Attendance slots: advisors manage, coordinators get the dashboard and can view
+    Route::middleware('role:advisor,coordinator')->group(function () {
+        Route::get('/attendance', [AttendanceSlotController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/{slot}', [AttendanceSlotController::class, 'show'])->name('attendance.show')->whereNumber('slot');
+    });
+    Route::middleware('role:advisor')->group(function () {
+        Route::get('/attendance/create', [AttendanceSlotController::class, 'create'])->name('attendance.create');
+        Route::post('/attendance', [AttendanceSlotController::class, 'store'])->name('attendance.store');
+        Route::get('/attendance/{slot}/edit', [AttendanceSlotController::class, 'edit'])->name('attendance.edit');
+        Route::put('/attendance/{slot}', [AttendanceSlotController::class, 'update'])->name('attendance.update');
+        Route::delete('/attendance/{slot}', [AttendanceSlotController::class, 'destroy'])->name('attendance.destroy');
+        Route::delete('/attendance/{slot}/records/{record}', [AttendanceSlotController::class, 'destroyRecord'])->name('attendance.records.destroy');
     });
 
     // Merit applications: advisors apply, coordinators decide

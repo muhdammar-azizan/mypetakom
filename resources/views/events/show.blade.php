@@ -53,6 +53,13 @@
                 @endif
             </x-card>
 
+            @if ($canManage)
+                <x-card title="Attendance">
+                    <p class="text-sm text-slate-600">Create a QR attendance slot so students can check in at the venue.</p>
+                    <a href="{{ route('attendance.create', ['event' => $event->id]) }}" class="mt-3 inline-block"><x-secondary-button>Add attendance slot</x-secondary-button></a>
+                </x-card>
+            @endif
+
             @if ($canManage || $user->isCoordinator())
                 @php $application = $event->meritApplication; @endphp
                 <x-card title="Merit Application">

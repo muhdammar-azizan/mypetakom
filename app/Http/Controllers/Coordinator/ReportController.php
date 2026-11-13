@@ -63,6 +63,20 @@ class ReportController extends Controller
                 "SELECT u.name AS advisor, COUNT(a.id) AS applications, SUM(CASE WHEN a.status = 'approved' THEN 1 ELSE 0 END) AS approved FROM merit_applications a JOIN events e ON e.id = a.event_id JOIN users u ON u.id = e.advisor_id GROUP BY u.id, u.name ORDER BY applications DESC",
                 ['advisor' => 'Advisor', 'applications' => 'Applications', 'approved' => 'Approved'],
             ),
+            $this->report(
+                'Module 3 - Attendance',
+                'Check-ins per attendance slot',
+                'Single table: number of students who checked in to each slot.',
+                'SELECT attendance_slot_id AS slot_id, COUNT(*) AS total, ROUND(AVG(distance_m)) AS avg_distance FROM attendances GROUP BY attendance_slot_id ORDER BY total DESC',
+                ['slot_id' => 'Slot #', 'total' => 'Check-ins', 'avg_distance' => 'Avg. distance (m)'],
+            ),
+            $this->report(
+                'Module 3 - Attendance',
+                'Attendance per event',
+                'Join (events + attendance_slots + attendances): slots, check-ins and unique students for each event.',
+                'SELECT e.title, COUNT(DISTINCT s.id) AS slots, COUNT(a.id) AS check_ins, COUNT(DISTINCT a.user_id) AS students FROM events e JOIN attendance_slots s ON s.event_id = e.id LEFT JOIN attendances a ON a.attendance_slot_id = s.id GROUP BY e.id, e.title ORDER BY check_ins DESC',
+                ['title' => 'Event', 'slots' => 'Slots', 'check_ins' => 'Check-ins', 'students' => 'Unique students'],
+            ),
         ];
     }
 

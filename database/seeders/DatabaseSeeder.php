@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attendance;
+use App\Models\AttendanceSlot;
 use App\Models\Event;
 use App\Models\Membership;
 use App\Models\MeritApplication;
@@ -93,6 +95,26 @@ class DatabaseSeeder extends Seeder
                 'position' => $i === 0 ? 'main_committee' : 'committee',
                 'position_title' => $i === 0 ? 'Director' : null,
             ]));
+
+            // Demo attendance for past events.
+            if (in_array($title, ['Petakom Code Sprint', 'National Hackathon 2026'], true)) {
+                $slot = AttendanceSlot::create([
+                    'event_id' => $event->id,
+                    'title' => 'Main session',
+                    'opens_at' => $start,
+                    'closes_at' => (clone $start)->modify('+2 hours'),
+                    'radius_m' => 100,
+                ]);
+
+                $members->shuffle()->take(rand(5, 8))->each(fn (User $m) => Attendance::create([
+                    'attendance_slot_id' => $slot->id,
+                    'user_id' => $m->id,
+                    'latitude' => $event->latitude,
+                    'longitude' => $event->longitude,
+                    'distance_m' => rand(5, 80),
+                    'checked_in_at' => (clone $start)->modify('+'.rand(5, 90).' minutes'),
+                ]));
+            }
 
             // Demo merit applications in different states.
             $state = ['Petakom Code Sprint' => 'pending', 'National Hackathon 2026' => 'approved', 'International AI Summit' => 'rejected'][$title] ?? null;
