@@ -27,6 +27,7 @@ class Menu
             User::ROLE_ADVISOR => [
                 ['Dashboard', 'home', 'dashboard'],
                 ['My Events', 'calendar', 'events.index'],
+                ['Merit Applications', 'file', 'merit-applications.index'],
                 ['Attendance', 'clipboard', 'attendance.index'],
                 ['Merit Claims', 'award', 'merit-claims.index'],
             ],

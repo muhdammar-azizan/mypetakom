@@ -6,6 +6,7 @@ use App\Http\Controllers\Coordinator\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\MeritApplicationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,19 @@ Route::middleware('auth')->group(function () {
         Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
         Route::post('/events/{event}/committee', [EventController::class, 'addCommittee'])->name('events.committee.store');
         Route::delete('/events/{event}/committee/{member}', [EventController::class, 'removeCommittee'])->name('events.committee.destroy');
+
+        Route::post('/events/{event}/merit-application', [MeritApplicationController::class, 'store'])->name('events.merit.store');
+        Route::delete('/events/{event}/merit-application', [MeritApplicationController::class, 'destroy'])->name('events.merit.destroy');
+    });
+
+    // Merit applications: advisors apply, coordinators decide
+    Route::middleware('role:advisor,coordinator')->group(function () {
+        Route::get('/merit-applications', [MeritApplicationController::class, 'index'])->name('merit-applications.index');
+        Route::get('/merit-applications/{application}', [MeritApplicationController::class, 'show'])->name('merit-applications.show');
+    });
+    Route::middleware('role:coordinator')->group(function () {
+        Route::post('/merit-applications/{application}/approve', [MeritApplicationController::class, 'approve'])->name('merit-applications.approve');
+        Route::post('/merit-applications/{application}/reject', [MeritApplicationController::class, 'reject'])->name('merit-applications.reject');
     });
 
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');

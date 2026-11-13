@@ -49,6 +49,20 @@ class ReportController extends Controller
                 'SELECT e.title, u.name AS advisor, e.status, COUNT(c.id) AS committee FROM events e JOIN users u ON u.id = e.advisor_id LEFT JOIN event_committees c ON c.event_id = e.id GROUP BY e.id, e.title, u.name, e.status ORDER BY committee DESC',
                 ['title' => 'Event', 'advisor' => 'Advisor', 'status' => 'Status', 'committee' => 'Committee members'],
             ),
+            $this->report(
+                'Module 2 - Merit applications',
+                'Merit applications by status',
+                'Single table: number of merit applications in each status.',
+                'SELECT status, COUNT(*) AS total FROM merit_applications GROUP BY status ORDER BY total DESC',
+                ['status' => 'Status', 'total' => 'Applications'],
+            ),
+            $this->report(
+                'Module 2 - Merit applications',
+                'Merit applications per advisor',
+                'Join (merit_applications + events + users): applications and how many were approved, per advisor.',
+                "SELECT u.name AS advisor, COUNT(a.id) AS applications, SUM(CASE WHEN a.status = 'approved' THEN 1 ELSE 0 END) AS approved FROM merit_applications a JOIN events e ON e.id = a.event_id JOIN users u ON u.id = e.advisor_id GROUP BY u.id, u.name ORDER BY applications DESC",
+                ['advisor' => 'Advisor', 'applications' => 'Applications', 'approved' => 'Approved'],
+            ),
         ];
     }
 

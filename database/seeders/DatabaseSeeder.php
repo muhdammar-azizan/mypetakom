@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Event;
 use App\Models\Membership;
+use App\Models\MeritApplication;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->seedMemberships($coordinator);
-        $this->seedEvents($advisor);
+        $this->seedEvents($advisor, $coordinator);
     }
 
     private function seedMemberships(User $coordinator): void
@@ -61,7 +62,7 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedEvents(User $advisor): void
+    private function seedEvents(User $advisor, User $coordinator): void
     {
         $letter = $this->sampleCard();
         $members = User::whereHas('membership', fn ($q) => $q->where('status', Membership::APPROVED))->get();
@@ -92,6 +93,19 @@ class DatabaseSeeder extends Seeder
                 'position' => $i === 0 ? 'main_committee' : 'committee',
                 'position_title' => $i === 0 ? 'Director' : null,
             ]));
+
+            // Demo merit applications in different states.
+            $state = ['Petakom Code Sprint' => 'pending', 'National Hackathon 2026' => 'approved', 'International AI Summit' => 'rejected'][$title] ?? null;
+
+            if ($state) {
+                MeritApplication::create([
+                    'event_id' => $event->id,
+                    'status' => $state,
+                    'remarks' => $state === 'rejected' ? 'Approval letter is missing the signature.' : null,
+                    'reviewed_by' => $state === 'pending' ? null : $coordinator->id,
+                    'reviewed_at' => $state === 'pending' ? null : now(),
+                ]);
+            }
         }
     }
 

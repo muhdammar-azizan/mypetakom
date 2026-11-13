@@ -61,7 +61,7 @@ class EventController extends Controller
     {
         Gate::authorize('view', $event);
 
-        $event->load('advisor', 'committees.user');
+        $event->load('advisor', 'committees.user', 'meritApplication');
 
         return view('events.show', [
             'event' => $event,

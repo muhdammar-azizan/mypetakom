@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Event extends Model
@@ -66,6 +67,11 @@ class Event extends Model
     public function committees(): HasMany
     {
         return $this->hasMany(EventCommittee::class);
+    }
+
+    public function meritApplication(): HasOne
+    {
+        return $this->hasOne(MeritApplication::class);
     }
 
     public function getLevelLabelAttribute(): string

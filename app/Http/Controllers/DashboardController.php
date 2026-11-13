@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\Membership;
+use App\Models\MeritApplication;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +16,42 @@ class DashboardController extends Controller
     {
         return match ($request->user()->role) {
             User::ROLE_COORDINATOR => $this->coordinator(),
+            User::ROLE_ADVISOR => $this->advisor($request->user()),
             default => view('dashboard.default'),
         };
+    }
+
+    private function advisor(User $advisor): View
+    {
+        $events = Event::where('advisor_id', $advisor->id);
+
+        $byLevel = (clone $events)->selectRaw('level, COUNT(*) as total')->groupBy('level')->pluck('total', 'level');
+        $levelLabels = array_values(Event::LEVELS);
+        $levelValues = array_map(fn ($key) => $byLevel[$key] ?? 0, array_keys(Event::LEVELS));
+
+        $committeeSizes = (clone $events)->withCount('committees')->orderByDesc('committees_count')->limit(6)->get();
+
+        $applicationCounts = MeritApplication::whereHas('event', fn ($q) => $q->where('advisor_id', $advisor->id))
+            ->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
+
+        return view('dashboard.advisor', [
+            'tiles' => [
+                ['My events', (clone $events)->count(), 'calendar'],
+                ['Active events', (clone $events)->where('status', 'active')->count(), 'check'],
+                ['Committee members', \App\Models\EventCommittee::whereHas('event', fn ($q) => $q->where('advisor_id', $advisor->id))->count(), 'users'],
+                ['Merit pending', $applicationCounts[MeritApplication::PENDING] ?? 0, 'file'],
+            ],
+            'levelLabels' => $levelLabels,
+            'levelValues' => $levelValues,
+            'committeeLabels' => $committeeSizes->pluck('title')->all(),
+            'committeeValues' => $committeeSizes->pluck('committees_count')->all(),
+            'upcoming' => (clone $events)->whereIn('status', ['active', 'postponed'])->where('starts_at', '>=', now())->orderBy('starts_at')->limit(5)->get(),
+            'applicationCounts' => [
+                'pending' => $applicationCounts[MeritApplication::PENDING] ?? 0,
+                'approved' => $applicationCounts[MeritApplication::APPROVED] ?? 0,
+                'rejected' => $applicationCounts[MeritApplication::REJECTED] ?? 0,
+            ],
+        ]);
     }
 
     private function coordinator(): View
@@ -43,6 +79,8 @@ class DashboardController extends Controller
                 ['Approved members', $statusCounts[Membership::APPROVED] ?? 0, 'check'],
                 ['Pending applications', $statusCounts[Membership::PENDING] ?? 0, 'clipboard'],
                 ['Event advisors', User::where('role', User::ROLE_ADVISOR)->count(), 'award'],
+                ['Events', Event::count(), 'calendar'],
+                ['Merit applications pending', MeritApplication::where('status', MeritApplication::PENDING)->count(), 'file'],
             ],
             'statusCounts' => [
                 Membership::PENDING => $statusCounts[Membership::PENDING] ?? 0,
@@ -53,6 +91,7 @@ class DashboardController extends Controller
             'monthValues' => $months->map(fn ($m) => $byMonth[$m->format('Y-m')] ?? 0)->all(),
             'programmeLabels' => $perProgramme->pluck('programme')->all(),
             'programmeValues' => $perProgramme->pluck('total')->all(),
+            'pendingMerit' => MeritApplication::with('event.advisor')->where('status', MeritApplication::PENDING)->latest()->limit(5)->get(),
             'pending' => Membership::with('user')->where('status', Membership::PENDING)->latest()->limit(5)->get(),
         ]);
     }

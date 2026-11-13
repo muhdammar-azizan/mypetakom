@@ -53,6 +53,39 @@
                 @endif
             </x-card>
 
+            @if ($canManage || $user->isCoordinator())
+                @php $application = $event->meritApplication; @endphp
+                <x-card title="Merit Application">
+                    @if (! $application)
+                        <p class="text-sm text-slate-600">No merit application has been submitted for this event.</p>
+                        @if ($canManage)
+                            <form method="POST" action="{{ route('events.merit.store', $event) }}" class="mt-3">
+                                @csrf <x-primary-button>Apply for merit</x-primary-button>
+                            </form>
+                        @endif
+                    @else
+                        <div class="flex flex-wrap items-center gap-3">
+                            <x-badge :color="$application->status_color">{{ ucfirst($application->status) }}</x-badge>
+                            <a href="{{ route('merit-applications.show', $application) }}" class="text-[13px] font-semibold text-brand-600">View application</a>
+                        </div>
+                        @if ($application->remarks)
+                            <p class="mt-3 px-3 py-2.5 bg-danger-50 rounded-lg text-sm text-danger-700"><span class="font-semibold">Remarks:</span> {{ $application->remarks }}</p>
+                        @endif
+                        @if ($canManage && $application->status === 'rejected')
+                            <form method="POST" action="{{ route('events.merit.store', $event) }}" class="mt-3">
+                                @csrf <x-primary-button>Apply again</x-primary-button>
+                            </form>
+                        @endif
+                        @if ($canManage && $application->status === 'pending')
+                            <form method="POST" action="{{ route('events.merit.destroy', $event) }}" class="mt-3">
+                                @csrf @method('DELETE')
+                                <button class="text-[13px] font-semibold text-danger-600 hover:underline min-h-[44px]">Withdraw application</button>
+                            </form>
+                        @endif
+                    @endif
+                </x-card>
+            @endif
+
             <x-card title="Event Committee">
                 @forelse ($event->committees->sortBy('position') as $c)
                     <div class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 first:border-t-0">

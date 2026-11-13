@@ -11,7 +11,7 @@
     <x-slot name="header">Dashboard</x-slot>
 
     {{-- Headline tiles --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-5">
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-5">
         @foreach ($tiles as [$label, $value, $icon])
             <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
                 <div class="flex items-center gap-2 text-xs text-slate-500">
@@ -83,6 +83,21 @@
             @else
                 <p class="text-sm text-slate-500 py-6 text-center">No applications yet.</p>
             @endif
+        </x-card>
+
+        {{-- Merit applications queue --}}
+        <x-card title="Merit applications waiting" subtitle="Events that applied for merit.">
+            @forelse ($pendingMerit as $a)
+                <a href="{{ route('merit-applications.show', $a) }}" class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 first:border-t-0 hover:bg-slate-50 -mx-2 px-2 rounded-lg">
+                    <span class="min-w-0">
+                        <span class="block text-sm font-semibold text-slate-800 truncate">{{ $a->event->title }}</span>
+                        <span class="block text-xs text-slate-500">{{ $a->event->level_label }} &middot; {{ $a->event->advisor->name }}</span>
+                    </span>
+                    <span class="text-[13px] font-semibold text-brand-600 shrink-0">Review</span>
+                </a>
+            @empty
+                <p class="text-sm text-slate-500 py-6 text-center">No merit applications waiting.</p>
+            @endforelse
         </x-card>
 
         {{-- Pending queue --}}
