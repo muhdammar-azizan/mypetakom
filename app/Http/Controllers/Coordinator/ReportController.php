@@ -35,6 +35,20 @@ class ReportController extends Controller
                 "SELECT u.programme, COUNT(m.id) AS total FROM memberships m JOIN users u ON u.id = m.user_id WHERE m.status = 'approved' GROUP BY u.programme ORDER BY total DESC",
                 ['programme' => 'Programme', 'total' => 'Approved members'],
             ),
+            $this->report(
+                'Module 2 - Events',
+                'Events by level',
+                'Single table: number of events at each level.',
+                'SELECT level, COUNT(*) AS total FROM events GROUP BY level ORDER BY total DESC',
+                ['level' => 'Level', 'total' => 'Events'],
+            ),
+            $this->report(
+                'Module 2 - Events',
+                'Committee size per event',
+                'Join (events + users + event_committees): each event with its advisor and number of committee members.',
+                'SELECT e.title, u.name AS advisor, e.status, COUNT(c.id) AS committee FROM events e JOIN users u ON u.id = e.advisor_id LEFT JOIN event_committees c ON c.event_id = e.id GROUP BY e.id, e.title, u.name, e.status ORDER BY committee DESC',
+                ['title' => 'Event', 'advisor' => 'Advisor', 'status' => 'Status', 'committee' => 'Committee members'],
+            ),
         ];
     }
 

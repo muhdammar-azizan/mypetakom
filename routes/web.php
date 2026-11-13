@@ -4,6 +4,7 @@ use App\Http\Controllers\Coordinator\MemberController;
 use App\Http\Controllers\Coordinator\ReportController;
 use App\Http\Controllers\Coordinator\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,9 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', DashboardController::class)->middleware('auth')->name('dashboard');
+
+// Public event information page (target of the event QR code)
+Route::get('/e/{token}', [EventController::class, 'publicShow'])->name('events.public');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -28,6 +32,23 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [MembershipController::class, 'store'])->name('store');
         Route::delete('/', [MembershipController::class, 'destroy'])->name('destroy');
     });
+
+    // Events: advisors manage their own, coordinators browse all, students see their committee roles
+    Route::middleware('role:advisor,coordinator')->get('/events', [EventController::class, 'index'])->name('events.index');
+
+    Route::middleware('role:advisor')->group(function () {
+        Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/events/{event}/committee', [EventController::class, 'addCommittee'])->name('events.committee.store');
+        Route::delete('/events/{event}/committee/{member}', [EventController::class, 'removeCommittee'])->name('events.committee.destroy');
+    });
+
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::get('/events/{event}/letter', [EventController::class, 'letter'])->name('events.letter');
+    Route::middleware('role:student')->get('/my-events', [EventController::class, 'mine'])->name('my-events.index');
 
     // Coordinator: members, user accounts, reports
     Route::middleware('role:coordinator')->group(function () {
