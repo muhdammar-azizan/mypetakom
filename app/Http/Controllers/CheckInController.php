@@ -11,6 +11,7 @@ use App\Support\Geo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 class CheckInController extends Controller
@@ -36,11 +37,22 @@ class CheckInController extends Controller
             'longitude.required' => 'Your location is required. Allow location access and try again.',
         ]);
 
+        // Limit wrong passwords per student ID, so one account cannot be guessed from many addresses.
+        $limiterKey = 'checkin-login:'.strtoupper($data['student_id']);
+
+        if (RateLimiter::tooManyAttempts($limiterKey, 5)) {
+            return $this->fail('Too many failed attempts. Please wait '.RateLimiter::availableIn($limiterKey).' seconds and try again.');
+        }
+
         $student = User::where('role', User::ROLE_STUDENT)->where('student_id', strtoupper($data['student_id']))->first();
 
         if (! $student || $student->isDeactivated() || ! Hash::check($data['password'], $student->password)) {
+            RateLimiter::hit($limiterKey, 60);
+
             return $this->fail('Student ID or password is incorrect.');
         }
+
+        RateLimiter::clear($limiterKey);
 
         if (in_array($event->status, ['cancelled', 'postponed'], true)) {
             return $this->fail("This event has been {$event->status}. Check-in is not available.");

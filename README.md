@@ -72,6 +72,19 @@ The seeder also creates 14 students with memberships in different states, 5 even
 
 > The check-in page uses the browser's geolocation, which needs HTTPS or `localhost`.
 
+## Deploy
+
+A `Dockerfile` is included, so any host that builds from Docker works (Railway, Render, Fly.io and similar).
+
+1. Create a new web service from this repository (Docker build).
+2. Set the environment variables from `.env.production.example`. Generate `APP_KEY` with `php artisan key:generate --show`, and set `APP_URL` to your public HTTPS address.
+3. Deploy. On start, `docker/start.sh` creates the SQLite file, runs migrations, seeds the demo data the first time, caches config and routes, and serves the app on `$PORT`.
+
+Notes:
+- SQLite lives inside the container. Without a persistent volume, data resets on every redeploy. That is fine for a portfolio demo. For lasting data, mount a volume and point `DB_DATABASE` to it. Uploaded files (`storage/app`) need a volume too.
+- HTTPS is forced in production, and the proxy is trusted, so secure cookies and the check-in geolocation work behind the host's TLS.
+- Forgot-password e-mails are written to the log (`MAIL_MAILER=log`) until a real mail service is configured.
+
 ## Tests
 
 ```bash

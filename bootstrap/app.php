@@ -11,7 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [\App\Http\Middleware\EnsureAccountActive::class]);
+        // Hosts such as Railway or Render sit behind a proxy that terminates HTTPS.
+        $middleware->trustProxies(at: '*');
+
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\EnsureAccountActive::class,
+        ]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
