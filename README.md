@@ -21,6 +21,59 @@ Built with Laravel 12, Blade, Tailwind CSS, Alpine.js and SQLite.
 
 Also: in-app notifications (bell in the topbar), custom error pages, and Chart.js dashboards with an accessible "View as table" for each chart.
 
+## How the modules fit together
+
+```mermaid
+flowchart LR
+    S[Student] -->|student card| M[Membership]
+    C[Coordinator] -->|approve| M
+    A[Event Advisor] -->|create| E[Event + committee]
+    A -->|apply| MA[Merit application]
+    C -->|approve| MA
+    A -->|open slot + QR| AS[Attendance slot]
+    S -->|scan QR, ID + password + GPS| CI[Check-in]
+    M -.->|approved members only| CI
+    AS --> CI
+    MA -->|approved| MS{{MeritService.sync}}
+    E --> MS
+    CI --> MS
+    MS --> MR[(Merit)]
+    S -->|letter| CL[Merit claim]
+    A -->|approve| CL
+    CL -->|approved| MR
+    MR --> D[Student dashboard + merit QR]
+```
+
+Merit is awarded in one place (`MeritService`). It is idempotent: an approved merit application on a non-cancelled event gives the committee and the attendees their points, and running it again changes nothing.
+
+## Database
+
+```mermaid
+erDiagram
+    users ||--o| memberships : "applies"
+    users ||--o{ events : "advises"
+    users ||--o{ event_committees : "serves on"
+    events ||--o{ event_committees : has
+    events ||--o| merit_applications : "applies for merit"
+    events ||--o{ attendance_slots : has
+    attendance_slots ||--o{ attendances : records
+    users ||--o{ attendances : "checks in"
+    users ||--o{ merit_claims : submits
+    events ||--o{ merit_claims : "claimed for"
+    users ||--o{ merits : earns
+    events ||--o{ merits : "awarded for"
+
+    users { int id string role string student_id string staff_id string qr_token }
+    memberships { int user_id string status string student_card_path }
+    events { int advisor_id string level string status decimal latitude decimal longitude string academic_year string qr_token }
+    event_committees { int event_id int user_id string position }
+    merit_applications { int event_id string status }
+    attendance_slots { int event_id datetime opens_at datetime closes_at int radius_m string qr_token }
+    attendances { int attendance_slot_id int user_id int distance_m }
+    merit_claims { int user_id int event_id string role string status string letter_path }
+    merits { int user_id int event_id string role int points string academic_year int semester string source }
+```
+
 ## Merit scores
 
 | Level | Committee: Main | Committee | Participant |
