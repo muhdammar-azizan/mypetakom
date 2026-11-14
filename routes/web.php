@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/{slug}/csv', [ReportController::class, 'csv'])->name('reports.csv');
     });
 });
 

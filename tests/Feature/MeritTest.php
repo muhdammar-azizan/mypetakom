@@ -366,4 +366,25 @@ class MeritTest extends TestCase
         $this->actingAs(User::factory()->coordinator()->create())->get('/reports')
             ->assertOk()->assertSee('Merit claims by status')->assertSee('Merit claims per advisor');
     }
+
+    public function test_coordinator_can_download_a_report_as_csv(): void
+    {
+        $student = User::factory()->create(['name' => '=HYPERLINK("http://evil.test")']);
+        $event = Event::factory()->create();
+        Merit::create(['user_id' => $student->id, 'event_id' => $event->id, 'role' => 'participant', 'points' => 5, 'academic_year' => '2025/2026', 'semester' => 1, 'source' => 'attendance']);
+
+        $response = $this->actingAs(User::factory()->coordinator()->create())->get('/reports/top-students-by-merit/csv');
+
+        $response->assertOk()->assertDownload();
+        $csv = $response->streamedContent();
+        $this->assertStringStartsWith("\u{FEFF}Student,\"Student ID\",Events,\"Total points\"", $csv);
+        $this->assertStringContainsString("'=HYPERLINK", $csv);   // formula is neutralised
+        $this->assertStringNotContainsString(',=HYPERLINK', "\n".$csv);
+    }
+
+    public function test_csv_is_coordinator_only_and_unknown_report_is_404(): void
+    {
+        $this->actingAs(User::factory()->create())->get('/reports/top-students-by-merit/csv')->assertForbidden();
+        $this->actingAs(User::factory()->coordinator()->create())->get('/reports/no-such-report/csv')->assertNotFound();
+    }
 }

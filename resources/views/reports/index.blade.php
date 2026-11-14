@@ -4,8 +4,15 @@
     <div class="flex flex-col gap-5 max-w-4xl">
         @foreach ($sections as $s)
             <x-card>
-                <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 mb-1">{{ $s['module'] }}</p>
-                <h2 class="font-head text-base font-bold text-slate-900">{{ $s['title'] }}</h2>
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 mb-1">{{ $s['module'] }}</p>
+                        <h2 class="font-head text-base font-bold text-slate-900">{{ $s['title'] }}</h2>
+                    </div>
+                    <a href="{{ route('reports.csv', Str::slug($s['title'])) }}" class="shrink-0 inline-flex items-center gap-1.5 min-h-[40px] px-3 rounded-lg border border-slate-300 text-[13px] font-semibold text-slate-700 hover:bg-slate-50">
+                        <x-icon name="download" :size="15" /> CSV
+                    </a>
+                </div>
                 <p class="text-xs text-slate-500 mt-1 mb-3">{{ $s['description'] }}</p>
 
                 <pre class="text-xs font-mono bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-x-auto mb-4 whitespace-pre-wrap">{{ $s['sql'] }}</pre>

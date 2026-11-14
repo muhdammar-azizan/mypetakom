@@ -4,13 +4,42 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
     public function index(): View
     {
         return view('reports.index', ['sections' => $this->sections()]);
+    }
+
+    /** Download one report as a CSV file that opens in Excel. */
+    public function csv(string $slug): StreamedResponse
+    {
+        $section = collect($this->sections())->first(fn ($s) => Str::slug($s['title']) === $slug);
+        abort_unless($section, 404);
+
+        return response()->streamDownload(function () use ($section) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\u{FEFF}"); // UTF-8 byte order mark, so Excel reads names correctly
+            fputcsv($out, array_values($section['columns']));
+
+            foreach ($section['rows'] as $row) {
+                fputcsv($out, array_map(fn ($key) => self::safeCell($row->$key ?? ''), array_keys($section['columns'])));
+            }
+
+            fclose($out);
+        }, Str::slug($section['title']).'-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** Stop spreadsheet formulas: a cell starting with = + - @ is stored as plain text. */
+    private static function safeCell(mixed $value): string
+    {
+        $text = (string) $value;
+
+        return preg_match('/^[=+\-@\t\r]/', $text) ? "'".$text : $text;
     }
 
     /**
