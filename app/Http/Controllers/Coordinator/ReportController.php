@@ -91,6 +91,20 @@ class ReportController extends Controller
                 'SELECT u.name, u.student_id, COUNT(m.id) AS events, SUM(m.points) AS points FROM merits m JOIN users u ON u.id = m.user_id GROUP BY u.id, u.name, u.student_id ORDER BY points DESC LIMIT 10',
                 ['name' => 'Student', 'student_id' => 'Student ID', 'events' => 'Events', 'points' => 'Total points'],
             ),
+            $this->report(
+                'Module 4 - Merit claims',
+                'Merit claims by status',
+                'Single table: number of merit claims in each status.',
+                'SELECT status, COUNT(*) AS total FROM merit_claims GROUP BY status ORDER BY total DESC',
+                ['status' => 'Status', 'total' => 'Claims'],
+            ),
+            $this->report(
+                'Module 4 - Merit claims',
+                'Merit claims per advisor',
+                'Join (merit_claims + events + users): claims received and approved for each event advisor.',
+                "SELECT u.name AS advisor, COUNT(c.id) AS claims, SUM(CASE WHEN c.status = 'approved' THEN 1 ELSE 0 END) AS approved FROM merit_claims c JOIN events e ON e.id = c.event_id JOIN users u ON u.id = e.advisor_id GROUP BY u.id, u.name ORDER BY claims DESC",
+                ['advisor' => 'Advisor', 'claims' => 'Claims', 'approved' => 'Approved'],
+            ),
         ];
     }
 

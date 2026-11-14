@@ -340,4 +340,30 @@ class MeritTest extends TestCase
         $this->actingAs(User::factory()->coordinator()->create())->get('/reports')
             ->assertOk()->assertSee('Merit awarded per semester')->assertSee('Top students by merit')->assertSee($student->student_id);
     }
+
+    public function test_merit_is_totalled_per_academic_year_on_both_pages(): void
+    {
+        $student = User::factory()->create();
+        $a = Event::factory()->create();
+        $b = Event::factory()->create();
+        $c = Event::factory()->create();
+        foreach ([[$a, '2024/2025', 1, 50], [$b, '2024/2025', 2, 30], [$c, '2025/2026', 1, 20]] as [$event, $year, $sem, $pts]) {
+            Merit::create(['user_id' => $student->id, 'event_id' => $event->id, 'role' => 'committee', 'points' => $pts, 'academic_year' => $year, 'semester' => $sem, 'source' => 'committee']);
+        }
+
+        $years = \App\Http\Controllers\MeritController::summary($student)['years'];
+        $this->assertSame([['2025/2026', 20], ['2024/2025', 80]], $years->map(fn ($y) => [$y['academic_year'], $y['points']])->all());
+
+        $this->get("/qr/{$student->qr_token}")->assertSee('Merit per academic year')->assertSee('2024/2025')->assertSee('80');
+        $this->actingAs($student)->get('/merit')->assertSee('Merit per academic year')->assertSee('2025/2026');
+    }
+
+    public function test_claim_reports_are_listed(): void
+    {
+        MeritClaim::factory()->status('approved')->create();
+        MeritClaim::factory()->status('submitted')->create();
+
+        $this->actingAs(User::factory()->coordinator()->create())->get('/reports')
+            ->assertOk()->assertSee('Merit claims by status')->assertSee('Merit claims per advisor');
+    }
 }

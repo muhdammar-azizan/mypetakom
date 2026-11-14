@@ -17,6 +17,18 @@
         <div class="font-head text-4xl font-bold">{{ $total }}</div>
     </div>
 
+    <h2 class="font-head text-sm font-bold text-slate-900 mb-2">Merit per academic year</h2>
+    <div class="mb-5">
+        @forelse ($years as $y)
+            <div class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 text-sm">
+                <span class="text-slate-700">{{ $y['academic_year'] }}</span>
+                <span class="font-mono font-semibold text-slate-900">{{ $y['points'] }}</span>
+            </div>
+        @empty
+            <p class="text-sm text-slate-500">No merit recorded yet.</p>
+        @endforelse
+    </div>
+
     <h2 class="font-head text-sm font-bold text-slate-900 mb-2">Merit per semester</h2>
     @forelse ($semesters as $s)
         <div class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 text-sm">

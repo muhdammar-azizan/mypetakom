@@ -20,6 +20,21 @@
     </div>
 
     <div class="grid gap-5 items-start lg:grid-cols-[1fr_1.4fr]">
+        <div class="flex flex-col gap-5">
+        <x-card title="Merit per academic year">
+            @forelse ($years as $y)
+                <div class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 first:border-t-0">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-800">{{ $y['academic_year'] }}</div>
+                        <div class="text-xs text-slate-500">{{ $y['events'] }} {{ Str::plural('event', $y['events']) }} &middot; {{ $y['semesters'] }} {{ Str::plural('semester', $y['semesters']) }}</div>
+                    </div>
+                    <div class="font-mono text-sm font-semibold text-slate-800">{{ $y['points'] }}</div>
+                </div>
+            @empty
+                <p class="text-sm text-slate-500">No merit yet.</p>
+            @endforelse
+        </x-card>
+
         <x-card title="Cumulative merit per semester">
             @forelse ($semesters as $s)
                 <div class="flex items-center justify-between gap-3 py-2.5 border-t border-slate-100 first:border-t-0">
@@ -36,6 +51,7 @@
                 <p class="text-sm text-slate-500">No merit yet. Join events to earn merit.</p>
             @endforelse
         </x-card>
+        </div>
 
         <x-card class="p-0 overflow-hidden">
             <div class="px-6 pt-6 pb-3"><h2 class="font-head text-base font-bold text-slate-900">Merit awarded</h2></div>
