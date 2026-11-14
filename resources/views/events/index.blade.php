@@ -8,14 +8,14 @@
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
-            <x-text-input name="q" :value="request('q')" placeholder="Search title or venue" class="flex-1 min-w-[200px]" />
-            <select name="level" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
+            <x-text-input name="q" :value="request('q')" placeholder="Search title or venue" aria-label="Search title or venue" class="flex-1 min-w-[200px]" />
+            <select name="level" aria-label="Filter by level" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
                 <option value="">All levels</option>
                 @foreach (\App\Models\Event::LEVELS as $value => $label)
                     <option value="{{ $value }}" @selected(request('level') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <select name="status" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
+            <select name="status" aria-label="Filter by status" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
                 <option value="">All statuses</option>
                 @foreach (\App\Models\Event::STATUSES as $value => $label)
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>

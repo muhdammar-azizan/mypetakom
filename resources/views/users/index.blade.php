@@ -6,8 +6,8 @@
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
-            <x-text-input name="q" :value="request('q')" placeholder="Search name, email or ID" class="flex-1 min-w-[200px]" />
-            <select name="role" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
+            <x-text-input name="q" :value="request('q')" placeholder="Search name, email or ID" aria-label="Search name, email or ID" class="flex-1 min-w-[200px]" />
+            <select name="role" aria-label="Filter by role" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
                 <option value="">All roles</option>
                 @foreach (['student' => 'Student', 'advisor' => 'Event Advisor', 'coordinator' => 'Coordinator'] as $value => $label)
                     <option value="{{ $value }}" @selected(request('role') === $value)>{{ $label }}</option>

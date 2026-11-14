@@ -20,8 +20,8 @@
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
-            <x-text-input name="q" :value="request('q')" placeholder="Search name, student ID or programme" class="flex-1 min-w-[200px]" />
-            <select name="status" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
+            <x-text-input name="q" :value="request('q')" placeholder="Search name, student ID or programme" aria-label="Search name, student ID or programme" class="flex-1 min-w-[200px]" />
+            <select name="status" aria-label="Filter by status" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
                 <option value="">All statuses</option>
                 @foreach (['pending', 'approved', 'rejected'] as $s)
                     <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>

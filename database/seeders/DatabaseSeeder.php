@@ -150,11 +150,15 @@ class DatabaseSeeder extends Seeder
         $members = User::whereHas('membership', fn ($q) => $q->where('status', Membership::APPROVED))
             ->whereDoesntHave('merits', fn ($q) => $q->where('event_id', $event->id))->get();
 
-        foreach (['pending', 'submitted', 'submitted', 'rejected'] as $i => $status) {
-            if (! isset($members[$i])) {
-                break;
-            }
+        // Always have four claimants, even when most members already hold merit for this event.
+        $members = $members->values();
+        while ($members->count() < 4) {
+            $extra = User::factory()->create();
+            Membership::factory()->approved()->for($extra)->create(['student_card_path' => $this->sampleCard()]);
+            $members->push($extra);
+        }
 
+        foreach (['pending', 'submitted', 'submitted', 'rejected'] as $i => $status) {
             MeritClaim::create([
                 'user_id' => $members[$i]->id,
                 'event_id' => $event->id,

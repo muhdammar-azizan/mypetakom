@@ -20,6 +20,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased text-slate-800 bg-slate-50">
+        <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-brand-600 focus:text-white focus:font-semibold">Skip to content</a>
         <div x-data="{
                 collapsed: (() => { try { return localStorage.getItem('sidebar') === '1' } catch (e) { return false } })(),
                 drawer: false,
@@ -147,7 +148,7 @@
                 </nav>
 
                 {{-- Content --}}
-                <main class="flex-1 overflow-auto px-4 sm:px-6 pt-7 pb-16">
+                <main id="main" tabindex="-1" class="focus:outline-none flex-1 overflow-auto px-4 sm:px-6 pt-7 pb-16">
                     <div class="max-w-[1040px] mx-auto">
                         @isset($header)
                             <div class="flex flex-wrap items-start justify-between gap-3 mb-5">

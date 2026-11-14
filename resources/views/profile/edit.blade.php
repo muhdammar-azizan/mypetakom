@@ -35,7 +35,7 @@
                 <div class="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-3">
                     <form method="POST" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
                         @csrf
-                        <label class="inline-flex items-center min-h-[40px] px-4 rounded-lg border border-slate-300 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+                        <label class="focus-within:ring-2 focus-within:ring-brand-600 inline-flex items-center min-h-[40px] px-4 rounded-lg border border-slate-300 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
                             Choose photo
                             <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="sr-only" required
                                    onchange="this.form.requestSubmit()">
