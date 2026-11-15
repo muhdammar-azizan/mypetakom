@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceSlotController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\Coordinator\ActivityLogController;
 use App\Http\Controllers\Coordinator\MemberController;
 use App\Http\Controllers\Coordinator\ReportController;
 use App\Http\Controllers\Coordinator\UserController;
@@ -125,6 +126,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class)->except('show');
         Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 
+        Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/{slug}/csv', [ReportController::class, 'csv'])->name('reports.csv');
     });

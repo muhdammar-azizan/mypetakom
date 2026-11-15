@@ -7,6 +7,7 @@ use App\Models\MeritApplication;
 use App\Models\User;
 use App\Notifications\Notice;
 use App\Services\MeritService;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -107,6 +108,7 @@ class MeritApplicationController extends Controller
         ]);
 
         MeritService::sync($application->event);
+        Activity::log('merit_application.approved', 'Approved the merit application for "'.$application->event->title.'".', $application);
         Notice::send($application->event->advisor, 'Merit application approved', '"'.$application->event->title.'" was approved. Merit has been awarded.', route('events.show', $application->event));
 
         return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application approved. Merit awarded to the committee and participants.');
@@ -124,6 +126,7 @@ class MeritApplicationController extends Controller
         ]);
 
         MeritService::sync($application->event);
+        Activity::log('merit_application.rejected', 'Rejected the merit application for "'.$application->event->title.'": '.$data['remarks'], $application);
         Notice::send($application->event->advisor, 'Merit application rejected', '"'.$application->event->title.'": '.$data['remarks'], route('events.show', $application->event));
 
         return redirect()->route('merit-applications.show', $application)->with('toast', 'Merit application rejected.');

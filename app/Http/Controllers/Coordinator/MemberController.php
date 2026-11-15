@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Coordinator;
 use App\Http\Controllers\Controller;
 use App\Models\Membership;
 use App\Notifications\Notice;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -46,6 +47,7 @@ class MemberController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        Activity::log('membership.approved', 'Approved the membership of '.$membership->user->name.' ('.$membership->user->student_id.').', $membership);
         Notice::send($membership->user, 'Membership approved', 'You are now a Petakom member. You can join events and earn merit.', route('membership.index'));
 
         return redirect()->route('members.show', $membership)->with('toast', 'Membership approved.');
@@ -62,6 +64,7 @@ class MemberController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        Activity::log('membership.rejected', 'Rejected the membership of '.$membership->user->name.' ('.$membership->user->student_id.'): '.$data['remarks'], $membership);
         Notice::send($membership->user, 'Membership rejected', $data['remarks'], route('membership.index'));
 
         return redirect()->route('members.show', $membership)->with('toast', 'Membership rejected.');
@@ -69,6 +72,7 @@ class MemberController extends Controller
 
     public function destroy(Membership $membership): RedirectResponse
     {
+        Activity::log('membership.deleted', 'Deleted the membership record of '.$membership->user->name.' ('.$membership->user->student_id.').', $membership);
         Storage::delete($membership->student_card_path);
         $membership->delete();
 

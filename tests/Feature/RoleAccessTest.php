@@ -26,6 +26,7 @@ class RoleAccessTest extends TestCase
         '/users' => ['coordinator'],
         '/users/create' => ['coordinator'],
         '/reports' => ['coordinator'],
+        '/activity' => ['coordinator'],
         '/dashboard' => ['student', 'advisor', 'coordinator'],
         '/profile' => ['student', 'advisor', 'coordinator'],
         '/notifications' => ['student', 'advisor', 'coordinator'],

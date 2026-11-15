@@ -7,6 +7,7 @@ use App\Models\AttendanceSlot;
 use App\Models\Event;
 use App\Services\MeritService;
 use App\Support\Qr;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,8 @@ class AttendanceSlotController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $slot = AttendanceSlot::create($this->validated($request));
+
+        Activity::log('attendance.created', 'Created the attendance slot "'.$slot->title.'" for "'.$slot->event->title.'".', $slot);
 
         return redirect()->route('attendance.show', $slot)->with('toast', 'Attendance slot created.');
     }
@@ -79,6 +82,7 @@ class AttendanceSlotController extends Controller
     {
         Gate::authorize('manage', $slot);
 
+        Activity::log('attendance.deleted', 'Deleted the attendance slot "'.$slot->title.'" of "'.$slot->event->title.'".', $slot);
         $slot->delete();
 
         return redirect()->route('attendance.index')->with('toast', 'Attendance slot deleted.');
@@ -90,6 +94,7 @@ class AttendanceSlotController extends Controller
         Gate::authorize('manage', $slot);
         abort_unless($record->attendance_slot_id === $slot->id, 404);
 
+        Activity::log('attendance.removed', 'Removed the check-in of '.$record->user->name.' from "'.$slot->title.'" ('.$slot->event->title.').', $slot);
         $record->delete();
         MeritService::sync($slot->event);
 

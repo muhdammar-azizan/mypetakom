@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendanceSlot;
 use App\Models\Event;
@@ -45,6 +46,20 @@ class DatabaseSeeder extends Seeder
         $this->seedMemberships($coordinator);
         $this->seedEvents($advisor, $coordinator);
         $this->seedClaims($advisor);
+
+        // A short audit trail so the Activity Log page has something to show.
+        foreach ([
+            [$coordinator, 'membership.approved', 'Approved the membership of a student.', 6],
+            [$coordinator, 'merit_application.approved', 'Approved a merit application.', 5],
+            [$advisor, 'event.created', 'Created an event.', 4],
+            [$advisor, 'attendance.created', 'Created an attendance slot.', 3],
+            [$coordinator, 'user.created', 'Created an advisor account.', 2],
+        ] as [$actor, $action, $description, $daysAgo]) {
+            ActivityLog::create([
+                'user_id' => $actor->id, 'actor_name' => $actor->name, 'actor_role' => $actor->role,
+                'action' => $action, 'description' => $description, 'created_at' => now()->subDays($daysAgo),
+            ]);
+        }
 
         // A few notifications so the bell is not empty in the demo.
         Notice::send($coordinator, 'New membership application', 'A student submitted a student card for review.', route('members.index'));

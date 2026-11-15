@@ -8,6 +8,7 @@ use App\Models\Membership;
 use App\Models\User;
 use App\Services\MeritService;
 use App\Support\Qr;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -55,6 +56,8 @@ class EventController extends Controller
 
         $event = Event::create($data + ['advisor_id' => $request->user()->id, 'status' => 'active']);
 
+        Activity::log('event.created', 'Created the event "'.$event->title.'".', $event);
+
         return redirect()->route('events.show', $event)->with('toast', 'Event created.');
     }
 
@@ -93,6 +96,8 @@ class EventController extends Controller
         $event->update($data);
         MeritService::sync($event);
 
+        Activity::log('event.updated', 'Updated the event "'.$event->title.'" (status: '.$event->status.').', $event);
+
         return redirect()->route('events.show', $event)->with('toast', 'Event updated.');
     }
 
@@ -100,6 +105,7 @@ class EventController extends Controller
     {
         Gate::authorize('manage', $event);
 
+        Activity::log('event.deleted', 'Deleted the event "'.$event->title.'".', $event);
         Storage::delete($event->approval_letter_path);
         $event->delete();
 
@@ -147,6 +153,8 @@ class EventController extends Controller
 
         MeritService::sync($event);
 
+        Activity::log('event.committee_added', 'Added '.$student->name.' to the committee of "'.$event->title.'".', $event);
+
         return back()->with('toast', 'Committee member added.');
     }
 
@@ -155,6 +163,7 @@ class EventController extends Controller
         Gate::authorize('manage', $event);
         abort_unless($member->event_id === $event->id, 404);
 
+        Activity::log('event.committee_removed', 'Removed '.$member->user->name.' from the committee of "'.$event->title.'".', $event);
         $member->delete();
         MeritService::sync($event);
 

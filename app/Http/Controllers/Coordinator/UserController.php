@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -42,7 +43,8 @@ class UserController extends Controller
         $data = $this->validated($request, null);
         $data['password'] = Hash::make($data['password']);
 
-        User::create($data);
+        $account = User::create($data);
+        Activity::log('user.created', 'Created the '.$account->role.' account of '.$account->name.'.', $account);
 
         return redirect()->route('users.index')->with('toast', 'Account created.');
     }
@@ -63,6 +65,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        Activity::log('user.updated', 'Updated the account of '.$user->name.' ('.$user->role.').', $user);
 
         return redirect()->route('users.index')->with('toast', 'Account updated.');
     }
@@ -72,6 +75,8 @@ class UserController extends Controller
         abort_if($user->is($request->user()), 403, 'You cannot deactivate your own account.');
 
         $user->update(['deactivated_at' => $user->isDeactivated() ? null : now()]);
+
+        Activity::log($user->isDeactivated() ? 'user.deactivated' : 'user.activated', ($user->isDeactivated() ? 'Deactivated' : 'Activated').' the account of '.$user->name.'.', $user);
 
         return back()->with('toast', $user->isDeactivated() ? 'Account deactivated.' : 'Account activated.');
     }
@@ -87,6 +92,7 @@ class UserController extends Controller
             Storage::delete($user->membership->student_card_path);
         }
 
+        Activity::log('user.deleted', 'Deleted the '.$user->role.' account of '.$user->name.'.', $user);
         $user->delete();
 
         return redirect()->route('users.index')->with('toast', 'Account deleted.');

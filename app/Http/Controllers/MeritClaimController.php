@@ -8,6 +8,7 @@ use App\Models\Membership;
 use App\Models\Merit;
 use App\Models\MeritClaim;
 use App\Services\MeritService;
+use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -127,6 +128,7 @@ class MeritClaimController extends Controller
         $claim->update(['status' => MeritClaim::APPROVED, 'remarks' => null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
         MeritService::awardClaim($claim->load('event'));
 
+        Activity::log('merit_claim.approved', 'Approved the merit claim of '.$claim->user->name.' for "'.$claim->event->title.'" ('.$claim->points.' points).', $claim);
         Notice::send($claim->user, 'Merit claim approved', 'Merit for "'.$claim->event->title.'" was added to your account.', route('merit-claims.show', $claim));
 
         return redirect()->route('merit-claims.show', $claim)->with('toast', 'Claim approved. Merit has been awarded.');
@@ -140,6 +142,7 @@ class MeritClaimController extends Controller
 
         $claim->update(['status' => MeritClaim::REJECTED, 'remarks' => $data['remarks'], 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
 
+        Activity::log('merit_claim.rejected', 'Rejected the merit claim of '.$claim->user->name.' for "'.$claim->event->title.'": '.$data['remarks'], $claim);
         Notice::send($claim->user, 'Merit claim rejected', $data['remarks'], route('merit-claims.show', $claim));
 
         return redirect()->route('merit-claims.show', $claim)->with('toast', 'Claim rejected.');

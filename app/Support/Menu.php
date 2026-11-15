@@ -24,6 +24,7 @@ class Menu
                 ['Merit Applications', 'file', 'merit-applications.index'],
                 ['Attendance', 'clipboard', 'attendance.index'],
                 ['Reports', 'chart', 'reports.index'],
+                ['Activity Log', 'clipboard', 'activity.index'],
             ],
             User::ROLE_ADVISOR => [
                 ['Dashboard', 'home', 'dashboard'],
