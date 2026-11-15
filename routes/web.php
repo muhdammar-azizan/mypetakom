@@ -9,6 +9,7 @@ use App\Http\Controllers\Coordinator\ReportController;
 use App\Http\Controllers\Coordinator\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\MeritApplicationController;
 use App\Http\Controllers\MeritClaimController;
@@ -36,6 +37,7 @@ Route::post('/checkin/{token}', [CheckInController::class, 'store'])->middleware
 
 Route::middleware('auth')->group(function () {
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');

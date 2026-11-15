@@ -19,6 +19,7 @@ class Menu
             User::ROLE_COORDINATOR => [
                 ['Dashboard', 'home', 'dashboard'],
                 ['Calendar', 'calendar-days', 'calendar.index'],
+                ['Leaderboard', 'trophy', 'leaderboard.index'],
                 ['Members', 'users', 'members.index'],
                 ['User Accounts', 'settings', 'users.index'],
                 ['Events', 'calendar', 'events.index'],
@@ -30,6 +31,7 @@ class Menu
             User::ROLE_ADVISOR => [
                 ['Dashboard', 'home', 'dashboard'],
                 ['Calendar', 'calendar-days', 'calendar.index'],
+                ['Leaderboard', 'trophy', 'leaderboard.index'],
                 ['My Events', 'calendar', 'events.index'],
                 ['Merit Applications', 'file', 'merit-applications.index'],
                 ['Attendance', 'clipboard', 'attendance.index'],
@@ -38,6 +40,7 @@ class Menu
             default => [
                 ['Dashboard', 'home', 'dashboard'],
                 ['Calendar', 'calendar-days', 'calendar.index'],
+                ['Leaderboard', 'trophy', 'leaderboard.index'],
                 ['Membership', 'users', 'membership.index'],
                 ['My Events', 'calendar', 'my-events.index'],
                 ['Merit', 'award', 'merit.index'],
