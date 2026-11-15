@@ -115,4 +115,29 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->refresh()->last_login_at);
     }
+
+    public function test_profile_page_has_the_photo_cropper(): void
+    {
+        $this->actingAs(User::factory()->create())->get('/profile')
+            ->assertOk()
+            ->assertSee('data-avatar-crop', false)
+            ->assertSee('id="avatar-crop-modal"', false)
+            ->assertSee('Adjust your photo')
+            ->assertSee('data-crop-zoom', false);
+    }
+
+    public function test_cropped_square_jpeg_is_accepted_and_oversized_photo_is_not(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        // What the cropper sends: a 512 x 512 JPEG.
+        $this->actingAs($user)->post('/profile/avatar', ['avatar' => UploadedFile::fake()->image('avatar.jpg', 512, 512)])
+            ->assertSessionHasNoErrors();
+        $this->assertNotNull($user->refresh()->avatar_path);
+
+        // The server still enforces its own 2 MB limit.
+        $this->actingAs($user)->post('/profile/avatar', ['avatar' => UploadedFile::fake()->image('big.jpg')->size(3000)])
+            ->assertSessionHasErrors('avatar');
+    }
 }

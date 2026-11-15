@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Profile photo cropper: show the crop area as a circle, like the saved avatar. */
+.avatar-cropper .cropper-view-box,
+.avatar-cropper .cropper-face {
+    border-radius: 50%;
+}
+.avatar-cropper .cropper-view-box {
+    outline: 2px solid #ffffff;
+    outline-color: rgba(255, 255, 255, 0.9);
+}

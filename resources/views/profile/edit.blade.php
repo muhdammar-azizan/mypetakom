@@ -37,8 +37,7 @@
                         @csrf
                         <label class="focus-within:ring-2 focus-within:ring-brand-600 inline-flex items-center min-h-[40px] px-4 rounded-lg border border-slate-300 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
                             Choose photo
-                            <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="sr-only" required
-                                   onchange="this.form.requestSubmit()">
+                            <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="sr-only" required data-avatar-crop>
                         </label>
                     </form>
                     @if ($user->avatar_path)
@@ -50,6 +49,30 @@
                     <span class="text-xs text-slate-400">JPG, PNG or WebP, max 2 MB</span>
                 </div>
                 <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
+
+                {{-- Crop dialog (opened by resources/js/avatar-crop.js) --}}
+                <div id="avatar-crop-modal" class="hidden fixed inset-0 z-50 bg-black/60 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+                    <div class="bg-white rounded-2xl w-full max-w-md p-5">
+                        <h3 id="crop-title" class="font-head font-bold text-slate-900">Adjust your photo</h3>
+                        <p class="text-xs text-slate-500 mb-3">Drag to move. Use the slider to zoom.</p>
+
+                        <div class="avatar-cropper h-72 bg-slate-100 rounded-xl overflow-hidden">
+                            <img data-crop-image alt="Photo to crop" class="block max-w-full">
+                        </div>
+                        <p data-crop-error role="alert" class="mt-2 text-sm text-danger-700"></p>
+
+                        <div class="mt-3 flex items-center gap-3">
+                            <label for="crop-zoom" class="text-xs font-semibold text-slate-600">Zoom</label>
+                            <input id="crop-zoom" data-crop-zoom type="range" min="0.1" max="4" step="0.01" class="flex-1 accent-brand-600">
+                            <button type="button" data-crop-rotate class="min-h-[40px] px-3 rounded-lg border border-slate-300 text-[13px] font-semibold text-slate-700 hover:bg-slate-50">Rotate</button>
+                        </div>
+
+                        <div class="mt-4 flex justify-end gap-3">
+                            <x-secondary-button type="button" data-crop-cancel>Cancel</x-secondary-button>
+                            <x-primary-button type="button" data-crop-save>Save photo</x-primary-button>
+                        </div>
+                    </div>
+                </div>
             </x-card>
 
             {{-- Details --}}
