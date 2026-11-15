@@ -33,6 +33,7 @@ class RoleAccessTest extends TestCase
         '/profile' => ['student', 'advisor', 'coordinator'],
         '/notifications' => ['student', 'advisor', 'coordinator'],
         '/calendar' => ['student', 'advisor', 'coordinator'],
+        '/merit/statement' => ['student'],
         '/settings' => ['student', 'advisor', 'coordinator'],
     ];
 

@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Merit;
 use App\Models\User;
+use App\Support\Qr;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -16,6 +19,45 @@ class MeritController extends Controller
         $user = $request->user();
 
         return view('merit.index', ['user' => $user] + self::summary($user));
+    }
+
+    /** The logged-in student's merit as a PDF statement. */
+    public function statement(Request $request): Response
+    {
+        $student = $request->user();
+
+        return Pdf::loadView('merit.statement', $this->statementData($student))
+            ->setPaper('a4')
+            ->setOption(['defaultFont' => 'DejaVu Sans'])
+            ->download('merit-statement-'.$student->student_id.'-'.now()->format('Ymd').'.pdf');
+    }
+
+    /** Everything the statement page needs. Kept apart from the PDF step so it can be checked as plain HTML. */
+    public function statementData(User $student): array
+    {
+        $summary = self::summary($student);
+        $now = now();
+        $logoFile = public_path('images/logo.png');
+        $verifyUrl = route('merit.qr', $student->qr_token);
+        $status = $student->membership?->status;
+
+        return $summary + [
+            'student' => $student,
+            'generatedAt' => $now,
+            // Short code that changes when the total changes, so an old printout can be told apart from a new one.
+            'reference' => 'MS-'.$student->student_id.'-'.$now->format('Ymd').'-'
+                .strtoupper(substr(hash_hmac('sha256', $student->id.'|'.$summary['total'].'|'.$now->toDateString(), (string) config('app.key')), 0, 6)),
+            'membershipLabel' => match ($status) {
+                'approved' => 'Approved member',
+                'pending' => 'Application pending',
+                'rejected' => 'Application rejected',
+                default => 'Not a member',
+            },
+            'sourceLabels' => ['committee' => 'Committee', 'attendance' => 'Attendance', 'claim' => 'Approved claim'],
+            'logo' => is_file($logoFile) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoFile)) : null,
+            'qrImage' => 'data:image/svg+xml;base64,'.base64_encode(Qr::svg($verifyUrl, 240)),
+            'verifyUrl' => $verifyUrl,
+        ];
     }
 
     /** Public page behind the student QR code: identity and merit totals. */

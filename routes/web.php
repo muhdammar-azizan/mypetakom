@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     // Student merit + claims (Module 4)
     Route::middleware('role:student')->group(function () {
         Route::get('/merit', [MeritController::class, 'index'])->name('merit.index');
+        Route::get('/merit/statement', [MeritController::class, 'statement'])->name('merit.statement');
         Route::get('/merit-claims/create', [MeritClaimController::class, 'create'])->name('merit-claims.create');
         Route::post('/merit-claims', [MeritClaimController::class, 'store'])->name('merit-claims.store');
         Route::get('/merit-claims/{claim}/edit', [MeritClaimController::class, 'edit'])->name('merit-claims.edit');

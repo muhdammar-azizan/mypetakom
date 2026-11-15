@@ -2,7 +2,12 @@
 
 <x-app-layout title="Merit">
     <x-slot name="header">My Merit</x-slot>
-    <x-slot name="actions"><a href="{{ route('merit-claims.create') }}"><x-secondary-button type="button">Claim missing merit</x-secondary-button></a></x-slot>
+    <x-slot name="actions">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('merit.statement') }}"><x-secondary-button type="button">Download statement (PDF)</x-secondary-button></a>
+            <a href="{{ route('merit-claims.create') }}"><x-secondary-button type="button">Claim missing merit</x-secondary-button></a>
+        </div>
+    </x-slot>
 
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-5">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
