@@ -102,4 +102,22 @@ class RoleAccessTest extends TestCase
         $this->post('/login', ['login' => 'nobody@petakom.test', 'password' => 'wrong'])->assertSessionHasErrors('login');
         $this->assertStringContainsString('Too many', session('errors')->first('login'));
     }
+
+    public function test_only_the_intended_routes_are_public(): void
+    {
+        $public = collect(app('router')->getRoutes()->getRoutes())
+            ->filter(fn ($route) => ! str_starts_with($route->uri(), '_') && ! str_starts_with($route->uri(), 'storage') && $route->uri() !== 'up')
+            ->filter(fn ($route) => collect($route->gatherMiddleware())->intersect(['auth', 'guest'])->isEmpty())
+            ->map(fn ($route) => $route->methods()[0].' '.$route->uri())
+            ->sort()->values()->all();
+
+        // Adding a public route must be a deliberate decision: update this list and think about abuse.
+        $this->assertSame([
+            'GET /',
+            'GET checkin/{token}',
+            'GET e/{token}',
+            'GET qr/{token}',
+            'POST checkin/{token}',
+        ], $public);
+    }
 }
