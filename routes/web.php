@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:advisor,coordinator')->group(function () {
         Route::get('/attendance', [AttendanceSlotController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/{slot}', [AttendanceSlotController::class, 'show'])->name('attendance.show')->whereNumber('slot');
+        Route::get('/attendance/{slot}/qr', [AttendanceSlotController::class, 'qr'])->name('attendance.qr')->whereNumber('slot');
     });
     Route::middleware('role:advisor')->group(function () {
         Route::get('/attendance/create', [AttendanceSlotController::class, 'create'])->name('attendance.create');

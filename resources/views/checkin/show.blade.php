@@ -32,6 +32,11 @@
         </div>
     @elseif ($blocked)
         <p role="alert" class="mt-6 px-4 py-3 rounded-lg text-sm font-semibold {{ $event->status === 'cancelled' ? 'bg-danger-50 text-danger-700' : 'bg-gold-50 text-gold-700' }}">{{ $blocked }} Check-in is not available.</p>
+    @elseif ($expired)
+        <div role="alert" class="mt-6 px-4 py-4 rounded-xl bg-gold-50 border border-gold-300 text-gold-700">
+            <div class="font-semibold">This QR code has expired</div>
+            <p class="mt-1 text-sm">The code changes every {{ \App\Support\RotatingCode::PERIOD }} seconds. Scan the QR code on the screen at the venue again.</p>
+        </div>
     @elseif ($window !== 'open')
         <p role="alert" class="mt-6 px-4 py-3 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600">
             {{ $window === 'upcoming' ? 'This slot has not opened yet.' : 'This slot has closed.' }}
@@ -50,6 +55,7 @@
                   } }"
               x-init="locate()">
             @csrf
+            <input type="hidden" name="code" value="{{ $code }}">
             <input type="hidden" name="latitude" :value="lat">
             <input type="hidden" name="longitude" :value="lng">
 

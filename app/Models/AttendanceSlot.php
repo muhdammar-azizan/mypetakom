@@ -6,17 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Support\RotatingCode;
 use Illuminate\Support\Str;
 
 class AttendanceSlot extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['event_id', 'title', 'opens_at', 'closes_at', 'radius_m'];
+    protected $fillable = ['event_id', 'title', 'opens_at', 'closes_at', 'radius_m', 'rotating_qr'];
 
     protected function casts(): array
     {
-        return ['opens_at' => 'datetime', 'closes_at' => 'datetime'];
+        return ['opens_at' => 'datetime', 'closes_at' => 'datetime', 'rotating_qr' => 'boolean'];
     }
 
     protected static function booted(): void
@@ -54,5 +55,13 @@ class AttendanceSlot extends Model
     public function getCheckinUrlAttribute(): string
     {
         return route('checkin.show', $this->qr_token);
+    }
+
+    /** The link inside the QR code: for a rotating slot it carries the current short-lived code. */
+    public function getScanUrlAttribute(): string
+    {
+        return $this->rotating_qr
+            ? route('checkin.show', ['token' => $this->qr_token, 'c' => RotatingCode::current($this)])
+            : $this->checkin_url;
     }
 }

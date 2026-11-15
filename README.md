@@ -16,7 +16,7 @@ Built with Laravel 12, Blade, Tailwind CSS, Alpine.js and SQLite.
 
 1. **Membership and users**: registration, login by email / student ID / staff ID, profile with avatar, membership review, coordinator-managed accounts (create, edit, deactivate, delete).
 2. **Events and merit applications**: events with level, location and committee, approval letters, public event page with QR, merit application and coordinator review.
-3. **Attendance**: time-windowed slots with QR, public check-in that checks student ID, password, approved membership, the time window and the student's GPS distance to the venue (Haversine).
+3. **Attendance**: time-windowed slots with a QR code (optionally rotating every 30 seconds, so a photo of the QR cannot be shared with people who are not at the venue), public check-in that checks student ID, password, approved membership, the time window and the student's GPS distance to the venue (Haversine).
 4. **Merit**: scores by event level and role (`config/merit.php`), merit awarded automatically and idempotently from approved applications, merit claims for missing merit (draft, submitted, approved or rejected), student merit page and public merit QR.
 
 Also: in-app notifications (bell in the topbar), custom error pages, and Chart.js dashboards with an accessible "View as table" for each chart.

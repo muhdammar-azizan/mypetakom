@@ -7,6 +7,8 @@ use App\Models\AttendanceSlot;
 use App\Models\Event;
 use App\Services\MeritService;
 use App\Support\Qr;
+use App\Support\RotatingCode;
+use Illuminate\Http\JsonResponse;
 use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,9 +59,21 @@ class AttendanceSlotController extends Controller
 
         return view('attendance.show', [
             'slot' => $slot,
-            'qrSvg' => Qr::svg($slot->checkin_url, 400),
+            'qrSvg' => Qr::svg($slot->scan_url, 400),
             'canManage' => Gate::allows('manage', $slot),
         ]);
+    }
+
+    /** Fresh QR for a rotating slot. The slot page asks for it each time the code changes. */
+    public function qr(AttendanceSlot $slot): JsonResponse
+    {
+        Gate::authorize('view', $slot);
+
+        return response()->json([
+            'svg' => Qr::svg($slot->scan_url, 400),
+            'url' => $slot->scan_url,
+            'refresh_in' => RotatingCode::secondsLeft(),
+        ])->header('Cache-Control', 'no-store');
     }
 
     public function edit(Request $request, AttendanceSlot $slot): View
@@ -115,6 +129,8 @@ class AttendanceSlotController extends Controller
             'closes_at' => ['required', 'date', 'after:opens_at'],
             'radius_m' => ['required', 'integer', 'between:20,1000'],
         ]);
+
+        $data['rotating_qr'] = $request->boolean('rotating_qr');
 
         return $data;
     }

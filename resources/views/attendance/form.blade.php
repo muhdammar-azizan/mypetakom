@@ -52,6 +52,14 @@
                     <x-input-error :messages="$errors->get('radius_m')" class="mt-2" />
                 </div>
 
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" name="rotating_qr" value="1" @checked(old('rotating_qr', $editing ? $slot->rotating_qr : true)) class="mt-1 w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-2 focus:ring-brand-100">
+                    <span>
+                        <span class="block text-sm font-semibold text-slate-800">Rotating QR code</span>
+                        <span class="block text-xs text-slate-500">The code changes every 30 seconds, so a photo of it cannot be shared with people who are not at the venue. Show it on a screen. Turn this off if you want to print the QR.</span>
+                    </span>
+                </label>
+
                 <div class="flex justify-end gap-3 mt-2">
                     <a href="{{ $editing ? route('attendance.show', $slot) : route('attendance.index') }}"><x-secondary-button>Cancel</x-secondary-button></a>
                     <x-primary-button>{{ $editing ? 'Save Changes' : 'Create Slot' }}</x-primary-button>

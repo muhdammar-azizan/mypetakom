@@ -8,6 +8,7 @@ use App\Models\Membership;
 use App\Models\User;
 use App\Services\MeritService;
 use App\Support\Geo;
+use App\Support\RotatingCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,15 +18,26 @@ use Illuminate\View\View;
 class CheckInController extends Controller
 {
     /** Page opened by scanning the slot QR. Public: the student identifies with ID and password. */
-    public function show(string $token): View
+    public function show(Request $request, string $token): View
     {
-        return view('checkin.show', ['slot' => $this->slot($token)]);
+        $slot = $this->slot($token);
+
+        return view('checkin.show', [
+            'slot' => $slot,
+            'code' => $request->query('c'),
+            // A rotating slot needs a link that was scanned a moment ago.
+            'expired' => $slot->rotating_qr && ! RotatingCode::valid($slot, $request->query('c')),
+        ]);
     }
 
     public function store(Request $request, string $token): RedirectResponse
     {
         $slot = $this->slot($token);
         $event = $slot->event;
+
+        if ($slot->rotating_qr && ! RotatingCode::valid($slot, $request->input('code'), RotatingCode::SUBMIT_GRACE)) {
+            return $this->fail('This QR code has expired. Please scan the code on the screen again.');
+        }
 
         $data = $request->validate([
             'student_id' => ['required', 'string'],

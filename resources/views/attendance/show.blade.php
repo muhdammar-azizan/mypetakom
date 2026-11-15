@@ -54,13 +54,48 @@
             </x-card>
         </div>
 
-        <x-card title="Check-in QR" subtitle="Students scan this at the venue." class="text-center">
-            <div class="mx-auto w-52 h-52 [&>svg]:w-full [&>svg]:h-full">{!! $qrSvg !!}</div>
-            <p class="mt-3 text-xs text-slate-500 break-all">{{ $slot->checkin_url }}</p>
-            <div class="mt-3 flex justify-center gap-3">
-                <a href="{{ $slot->checkin_url }}" target="_blank" class="text-[13px] font-semibold text-brand-600">Open page</a>
-                <button type="button" onclick="window.print()" class="text-[13px] font-semibold text-brand-600">Print</button>
-            </div>
-        </x-card>
+        @if ($slot->rotating_qr)
+            <x-card title="Check-in QR" subtitle="Rotating code: show this on a screen at the venue." class="text-center"
+                    x-data="{
+                        left: {{ \App\Support\RotatingCode::secondsLeft() }},
+                        url: '{{ $slot->scan_url }}',
+                        busy: false,
+                        async refresh() {
+                            if (this.busy) return;
+                            this.busy = true;
+                            try {
+                                const r = await fetch('{{ route('attendance.qr', $slot) }}', { headers: { Accept: 'application/json' } });
+                                if (! r.ok) throw new Error('failed');
+                                const d = await r.json();
+                                this.$refs.box.innerHTML = d.svg;
+                                this.url = d.url;
+                                this.left = d.refresh_in;
+                            } catch (e) {
+                                this.left = 5;
+                            } finally {
+                                this.busy = false;
+                            }
+                        },
+                        start() {
+                            setInterval(() => { this.left--; if (this.left <= 0) this.refresh(); }, 1000);
+                        }
+                    }" x-init="start()">
+                <div x-ref="box" class="mx-auto w-52 h-52 [&>svg]:w-full [&>svg]:h-full">{!! $qrSvg !!}</div>
+                <p class="mt-3 text-xs text-slate-500" aria-live="off">New code in <span class="font-mono font-semibold text-slate-700" x-text="Math.max(left, 0)"></span> s</p>
+                <p class="mt-1 text-xs text-slate-400">Each code only works for about a minute, so a photo of it cannot be shared with someone who is not there.</p>
+                <div class="mt-3 flex justify-center gap-3">
+                    <a :href="url" target="_blank" class="text-[13px] font-semibold text-brand-600">Open page</a>
+                </div>
+            </x-card>
+        @else
+            <x-card title="Check-in QR" subtitle="Students scan this at the venue." class="text-center">
+                <div class="mx-auto w-52 h-52 [&>svg]:w-full [&>svg]:h-full">{!! $qrSvg !!}</div>
+                <p class="mt-3 text-xs text-slate-500 break-all">{{ $slot->checkin_url }}</p>
+                <div class="mt-3 flex justify-center gap-3">
+                    <a href="{{ $slot->checkin_url }}" target="_blank" class="text-[13px] font-semibold text-brand-600">Open page</a>
+                    <button type="button" onclick="window.print()" class="text-[13px] font-semibold text-brand-600">Print</button>
+                </div>
+            </x-card>
+        @endif
     </div>
 </x-app-layout>
