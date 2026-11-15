@@ -33,11 +33,18 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->fill($request->validated());
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
         $user->save();
+
+        // The new address has to prove it is the user's.
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         return Redirect::route('profile.edit')->with('toast', 'Profile updated.');
     }

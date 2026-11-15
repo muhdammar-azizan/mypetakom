@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+use Throwable;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
@@ -20,26 +22,26 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws ValidationException
+     * Send a reset link to the account that matches a student ID, staff ID or e-mail.
+     * The answer is always the same, so the page cannot be used to find out who has an account.
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        $data = $request->validate(['login' => ['required', 'string', 'max:255']]);
+        $login = trim($data['login']);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $user = str_contains($login, '@')
+            ? User::where('email', Str::lower($login))->first()
+            : User::where('student_id', Str::upper($login))->orWhere('staff_id', Str::upper($login))->first();
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($user && ! $user->isDeactivated()) {
+            try {
+                Password::sendResetLink(['email' => $user->email]);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return back()->with('status', 'If an account matches, we have sent a link to its e-mail address. Check your inbox and spam folder.');
     }
 }

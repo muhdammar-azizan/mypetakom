@@ -126,6 +126,17 @@ The seeder also creates 14 students with memberships in different states, 5 even
 
 > The check-in page uses the browser's geolocation, which needs HTTPS or `localhost`.
 
+## E-mail
+
+MyPetakom sends e-mail for password reset links, e-mail verification, and the same notices that appear in the bell (a user can turn in-app and e-mail notices on or off in Settings).
+
+- **Development:** `MAIL_MAILER=log` (the default in `.env.example`) writes every e-mail to `storage/logs/laravel.log`. Open the log to copy a reset link. No account needed.
+- **Test inbox:** create a free [Mailtrap](https://mailtrap.io) inbox, set `MAIL_MAILER=smtp` and paste its host, port, username and password into `.env`.
+- **Real delivery:** use any SMTP service (Brevo, Gmail app password, your university's mail server) with the details in `.env.production.example`.
+- Also set `APP_NAME=MyPetakom` in `.env`: it is the name shown in page titles and in the e-mail sender.
+
+Design choices: e-mail verification is a reminder banner, not a lock, so nobody is stuck if mail is down. A mail failure never breaks the action that caused it (approving a membership still works). The forgot-password page gives the same answer for every login, so it cannot be used to find out who has an account.
+
 ## Deploy
 
 A `Dockerfile` is included, so any host that builds from Docker works (Railway, Render, Fly.io and similar).

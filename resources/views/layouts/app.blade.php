@@ -148,6 +148,20 @@
                     @endif
                 </nav>
 
+                {{-- E-mail not verified yet --}}
+                @unless ($user->hasVerifiedEmail())
+                    <div role="status" class="px-5 py-2.5 bg-gold-50 border-b border-gold-300 text-[13px] text-gold-700 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span><span class="font-semibold">Your e-mail address is not verified.</span> Verify it so password reset links and notices reach you.</span>
+                        <form method="POST" action="{{ route('verification.send') }}">
+                            @csrf
+                            <button class="font-bold underline min-h-[32px]">Send verification link</button>
+                        </form>
+                        @if (session('status') === 'verification-link-sent')
+                            <span class="font-semibold text-ok-600">Link sent. Check your inbox.</span>
+                        @endif
+                    </div>
+                @endunless
+
                 {{-- Content --}}
                 <main id="main" tabindex="-1" class="focus:outline-none flex-1 overflow-auto px-4 sm:px-6 pt-7 pb-16">
                     <div class="max-w-[1040px] mx-auto">
@@ -167,5 +181,11 @@
         </div>
 
         <x-toast />
+        @if (request()->boolean('verified') && $user->hasVerifiedEmail())
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.opacity role="status"
+                 class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-slate-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg">
+                <x-icon name="check" :size="16" class="text-ok-500" /> E-mail verified. Thank you.
+            </div>
+        @endif
     </body>
 </html>

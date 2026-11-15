@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Throwable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -48,6 +50,32 @@ class User extends Authenticatable
         'notify_email' => true,
         'show_on_leaderboard' => true,
     ];
+
+    /**
+     * A deactivated account gets no reset link. The caller shows the same message either way,
+     * so nobody can tell from the page whether an account exists or is deactivated.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        if ($this->isDeactivated()) {
+            return;
+        }
+
+        $this->notify(new ResetPassword($token));
+    }
+
+    /**
+     * Mail trouble must not break signing up or saving a profile: report it and carry on.
+     * The user can ask for the link again from the banner.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        try {
+            parent::sendEmailVerificationNotification();
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
 
     public const ROLE_STUDENT = 'student';
     public const ROLE_ADVISOR = 'advisor';
