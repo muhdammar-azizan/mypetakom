@@ -15,10 +15,11 @@ class Notice extends Notification
         public string $url,
     ) {}
 
-    /** Send to one user, or to a list of users (null and duplicates are skipped). */
+    /** Send to one user, or to a list of users (null, duplicates and users who turned notices off are skipped). */
     public static function send(User|Collection|array|null $to, string $title, string $body, string $url): void
     {
-        $users = collect($to instanceof User ? [$to] : $to)->filter()->unique('id');
+        $users = collect($to instanceof User ? [$to] : $to)->filter()->unique('id')
+            ->filter(fn (User $user) => $user->notify_in_app);
 
         foreach ($users as $user) {
             $user->notify(new self($title, $body, $url));

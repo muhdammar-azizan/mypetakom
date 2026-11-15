@@ -14,6 +14,7 @@ use App\Http\Controllers\MeritClaimController;
 use App\Http\Controllers\MeritController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,6 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences');
+    Route::delete('/settings/account', [SettingsController::class, 'destroy'])->name('settings.account.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

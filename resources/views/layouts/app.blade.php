@@ -130,6 +130,7 @@
                         <div x-show="open" x-transition style="display:none"
                              class="absolute right-0 top-14 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50">
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-[13.5px] text-slate-700 hover:bg-slate-50">View Profile</a>
+                            <a href="{{ route('settings.edit') }}" class="block px-4 py-2.5 text-[13.5px] text-slate-700 border-t border-slate-100 hover:bg-slate-50">Settings</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full text-left px-4 py-2.5 text-[13.5px] text-danger-600 border-t border-slate-100 hover:bg-danger-50">Log Out</button>

@@ -37,6 +37,16 @@ class User extends Authenticatable
         'avatar_path',
         'last_login_at',
         'deactivated_at',
+        'notify_in_app',
+        'notify_email',
+        'show_on_leaderboard',
+    ];
+
+    /** Same defaults as the database, so a user created in this request already has them. */
+    protected $attributes = [
+        'notify_in_app' => true,
+        'notify_email' => true,
+        'show_on_leaderboard' => true,
     ];
 
     public const ROLE_STUDENT = 'student';
@@ -137,6 +147,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'deactivated_at' => 'datetime',
+            'notify_in_app' => 'boolean',
+            'notify_email' => 'boolean',
+            'show_on_leaderboard' => 'boolean',
             'password' => 'hashed',
         ];
     }

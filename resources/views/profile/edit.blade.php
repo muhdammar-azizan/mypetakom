@@ -119,44 +119,6 @@
                     </div>
                 </form>
             </x-card>
-
-            {{-- Password --}}
-            <x-card title="Change Password" x-data="{ pw: '' }">
-                <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-4">
-                    @csrf @method('PUT')
-
-                    <div>
-                        <x-input-label for="current_password" value="Current Password" />
-                        <x-text-input id="current_password" name="current_password" type="password" class="block w-full" autocomplete="current-password" />
-                        <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
-                    </div>
-
-                    <div>
-                        <x-input-label for="new_password" value="New Password" />
-                        <x-text-input id="new_password" name="password" type="password" class="block w-full" autocomplete="new-password" x-model="pw" />
-                        <div x-show="pw.length" class="mt-2" style="display:none"
-                             x-data="{ get score() { let s = 0; if (pw.length >= 8) s++; if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++; if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) s++; return s } }">
-                            <div class="h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                <div class="h-full transition-all"
-                                     :class="score <= 1 ? 'bg-danger-600' : (score == 2 ? 'bg-gold-500' : 'bg-ok-600')"
-                                     :style="`width:${[10, 33, 66, 100][score]}%`"></div>
-                            </div>
-                            <p class="mt-1 text-xs text-slate-500" x-text="['Weak', 'Weak', 'Medium', 'Strong'][score]"></p>
-                        </div>
-                        <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
-                    </div>
-
-                    <div>
-                        <x-input-label for="password_confirmation" value="Confirm New Password" />
-                        <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="block w-full" autocomplete="new-password" />
-                        <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
-                    </div>
-
-                    <div class="flex justify-end">
-                        <x-primary-button>Update Password</x-primary-button>
-                    </div>
-                </form>
-            </x-card>
         </div>
 
         {{-- Right column --}}
@@ -188,6 +150,7 @@
                     <div class="flex justify-between gap-3"><dt class="text-slate-500">Last login</dt><dd class="font-medium text-slate-800">{{ $user->last_login_at?->diffForHumans() ?? '-' }}</dd></div>
                     <div class="flex justify-between items-center gap-3"><dt class="text-slate-500">Status</dt><dd><x-badge color="green">Active</x-badge></dd></div>
                 </dl>
+                <a href="{{ route('settings.edit') }}" class="mt-4 inline-block text-[13px] font-semibold text-brand-600">Password, notifications and privacy &rarr;</a>
             </x-card>
         </div>
     </div>
