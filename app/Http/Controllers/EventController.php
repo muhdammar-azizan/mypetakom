@@ -16,26 +16,53 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Support\Csv;
+use App\Support\DateFilter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EventController extends Controller
 {
     /** Advisors see their own events; coordinators see all events. */
     public function index(Request $request): View
     {
+        return view('events.index', ['events' => $this->filtered($request)->orderByDesc('starts_at')->paginate(10)->withQueryString()]);
+    }
+
+    /** The events list as a CSV file, with the same search and filters as the page. */
+    public function export(Request $request): StreamedResponse
+    {
+        $rows = $this->filtered($request)->orderByDesc('starts_at')->get()->map(fn (Event $e) => [
+            $e->title,
+            $e->level_label,
+            $e->venue,
+            $e->starts_at->format('Y-m-d H:i'),
+            $e->ends_at->format('Y-m-d H:i'),
+            $e->academic_year,
+            $e->status_label,
+            $e->advisor->name,
+            $e->committees_count,
+        ]);
+
+        return Csv::download(
+            'events-'.now()->format('Ymd').'.csv',
+            ['Title', 'Level', 'Venue', 'Starts', 'Ends', 'Academic year', 'Status', 'Advisor', 'Committee members'],
+            $rows,
+        );
+    }
+
+    private function filtered(Request $request)
+    {
         $user = $request->user();
 
-        $events = Event::with('advisor')->withCount('committees')
+        $query = Event::with('advisor')->withCount('committees')
             ->when($user->isAdvisor(), fn ($q) => $q->where('advisor_id', $user->id))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('level'), fn ($q) => $q->where('level', $request->level))
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
                 ->where('title', 'like', '%'.$request->q.'%')
-                ->orWhere('venue', 'like', '%'.$request->q.'%')))
-            ->orderByDesc('starts_at')
-            ->paginate(10)
-            ->withQueryString();
+                ->orWhere('venue', 'like', '%'.$request->q.'%')));
 
-        return view('events.index', ['events' => $events]);
+        return DateFilter::apply($query, $request, 'starts_at');
     }
 
     public function create(): View

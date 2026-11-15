@@ -3,6 +3,12 @@
     <x-slot name="actions"><a href="{{ route('attendance.create') }}"><x-primary-button type="button">+ New slot</x-primary-button></a></x-slot>
 
     <x-card class="p-0 overflow-hidden">
+        <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
+            <x-text-input name="q" :value="request('q')" placeholder="Search slot or event" aria-label="Search slot or event" class="flex-1 min-w-[200px]" />
+            <x-date-range />
+            <x-primary-button>Filter</x-primary-button>
+        </form>
+
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">

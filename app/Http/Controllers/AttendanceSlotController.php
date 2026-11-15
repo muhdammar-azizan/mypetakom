@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Support\Csv;
+use App\Support\DateFilter;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceSlotController extends Controller
 {
@@ -26,10 +30,15 @@ class AttendanceSlotController extends Controller
             return $this->dashboard();
         }
 
+        $term = '%'.$request->q.'%';
+
         $slots = AttendanceSlot::with('event')->withCount('attendances')
             ->whereHas('event', fn ($q) => $q->where('advisor_id', $request->user()->id))
-            ->latest('opens_at')
-            ->paginate(10);
+            ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
+                ->where('title', 'like', $term)
+                ->orWhereHas('event', fn ($e) => $e->where('title', 'like', $term))));
+
+        $slots = DateFilter::apply($slots, $request, 'opens_at')->latest('opens_at')->paginate(10)->withQueryString();
 
         return view('attendance.index', ['slots' => $slots]);
     }
@@ -62,6 +71,28 @@ class AttendanceSlotController extends Controller
             'qrSvg' => Qr::svg($slot->scan_url, 400),
             'canManage' => Gate::allows('manage', $slot),
         ]);
+    }
+
+    /** Everyone who checked in to this slot, as a CSV file. */
+    public function csv(AttendanceSlot $slot): StreamedResponse
+    {
+        Gate::authorize('view', $slot);
+
+        $rows = $slot->attendances()->with('user')->orderBy('checked_in_at')->get()->map(fn (Attendance $a) => [
+            $a->user->student_id,
+            $a->user->name,
+            $a->user->programme,
+            $a->checked_in_at->format('Y-m-d H:i:s'),
+            $a->distance_m,
+            $a->latitude,
+            $a->longitude,
+        ]);
+
+        return Csv::download(
+            'attendance-'.Str::slug($slot->title).'-'.now()->format('Ymd').'.csv',
+            ['Student ID', 'Name', 'Programme', 'Checked in at', 'Distance from venue (m)', 'Latitude', 'Longitude'],
+            $rows,
+        );
     }
 
     /** Fresh QR for a rotating slot. The slot page asks for it each time the code changes. */

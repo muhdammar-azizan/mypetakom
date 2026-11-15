@@ -8,6 +8,7 @@
 
 <x-app-layout title="Members">
     <x-slot name="header">Members</x-slot>
+    <x-slot name="actions"><a href="{{ route('members.export', request()->query()) }}"><x-secondary-button type="button">Export CSV</x-secondary-button></a></x-slot>
 
     <div class="grid grid-cols-3 gap-3 sm:gap-5 mb-5">
         @foreach ($tiles as [$key, $label, $color])
@@ -27,6 +28,7 @@
                     <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
+            <x-date-range />
             <x-primary-button>Filter</x-primary-button>
         </form>
 

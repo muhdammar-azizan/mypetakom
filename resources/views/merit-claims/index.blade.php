@@ -21,12 +21,14 @@
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
+            <x-text-input name="q" :value="request('q')" placeholder="Search event or student" aria-label="Search event or student" class="flex-1 min-w-[200px]" />
             <select name="status" aria-label="Filter by status" class="min-h-[44px] rounded-lg border-slate-300 text-sm">
                 <option value="">All statuses</option>
                 @foreach ($statuses as $key => $label)
                     <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
                 @endforeach
             </select>
+            <x-date-range />
             <x-primary-button>Filter</x-primary-button>
         </form>
 

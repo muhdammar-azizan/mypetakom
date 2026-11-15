@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Support\DateFilter;
 
 class MeritApplicationController extends Controller
 {
@@ -20,12 +21,16 @@ class MeritApplicationController extends Controller
     {
         $user = $request->user();
 
+        $term = '%'.$request->q.'%';
+
         $applications = MeritApplication::with('event.advisor')
             ->whereHas('event', fn ($q) => $user->isAdvisor() ? $q->where('advisor_id', $user->id) : $q)
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->when($request->filled('q'), fn ($q) => $q->whereHas('event', fn ($e) => $e
+                ->where('title', 'like', $term)
+                ->orWhereHas('advisor', fn ($a) => $a->where('name', 'like', $term))));
+
+        $applications = DateFilter::apply($applications, $request, 'created_at')->latest()->paginate(10)->withQueryString();
 
         return view('merit-applications.index', [
             'applications' => $applications,

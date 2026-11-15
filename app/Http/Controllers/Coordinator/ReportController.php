@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\Csv;
 
 class ReportController extends Controller
 {
@@ -21,25 +22,13 @@ class ReportController extends Controller
         $section = collect($this->sections())->first(fn ($s) => Str::slug($s['title']) === $slug);
         abort_unless($section, 404);
 
-        return response()->streamDownload(function () use ($section) {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\u{FEFF}"); // UTF-8 byte order mark, so Excel reads names correctly
-            fputcsv($out, array_values($section['columns']));
+        $keys = array_keys($section['columns']);
 
-            foreach ($section['rows'] as $row) {
-                fputcsv($out, array_map(fn ($key) => self::safeCell($row->$key ?? ''), array_keys($section['columns'])));
-            }
-
-            fclose($out);
-        }, Str::slug($section['title']).'-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /** Stop spreadsheet formulas: a cell starting with = + - @ is stored as plain text. */
-    private static function safeCell(mixed $value): string
-    {
-        $text = (string) $value;
-
-        return preg_match('/^[=+\-@\t\r]/', $text) ? "'".$text : $text;
+        return Csv::download(
+            Str::slug($section['title']).'-'.now()->format('Ymd').'.csv',
+            array_values($section['columns']),
+            collect($section['rows'])->map(fn ($row) => array_map(fn ($key) => $row->$key ?? '', $keys)),
+        );
     }
 
     /**

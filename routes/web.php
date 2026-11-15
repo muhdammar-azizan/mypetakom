@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
 
     // Events: advisors manage their own, coordinators browse all, students see their committee roles
     Route::middleware('role:advisor,coordinator')->get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::middleware('role:advisor,coordinator')->get('/events/export', [EventController::class, 'export'])->name('events.export');
 
     Route::middleware('role:advisor')->group(function () {
         Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
@@ -95,6 +96,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendance', [AttendanceSlotController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/{slot}', [AttendanceSlotController::class, 'show'])->name('attendance.show')->whereNumber('slot');
         Route::get('/attendance/{slot}/qr', [AttendanceSlotController::class, 'qr'])->name('attendance.qr')->whereNumber('slot');
+        Route::get('/attendance/{slot}/csv', [AttendanceSlotController::class, 'csv'])->name('attendance.csv')->whereNumber('slot');
     });
     Route::middleware('role:advisor')->group(function () {
         Route::get('/attendance/create', [AttendanceSlotController::class, 'create'])->name('attendance.create');
@@ -122,6 +124,7 @@ Route::middleware('auth')->group(function () {
     // Coordinator: members, user accounts, reports
     Route::middleware('role:coordinator')->group(function () {
         Route::prefix('members')->name('members.')->group(function () {
+            Route::get('/export', [MemberController::class, 'export'])->name('export');
             Route::get('/', [MemberController::class, 'index'])->name('index');
             Route::get('/{membership}', [MemberController::class, 'show'])->name('show');
             Route::post('/{membership}/approve', [MemberController::class, 'approve'])->name('approve');

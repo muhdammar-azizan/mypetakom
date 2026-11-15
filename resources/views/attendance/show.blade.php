@@ -4,6 +4,7 @@
     <x-slot name="header">{{ $slot->title }}</x-slot>
     <x-slot name="actions">
         <div class="flex items-center gap-3">
+            <a href="{{ route('attendance.csv', $slot) }}"><x-secondary-button type="button">Export CSV</x-secondary-button></a>
             @if ($canManage)
                 <a href="{{ route('attendance.edit', $slot) }}"><x-secondary-button>Edit</x-secondary-button></a>
             @endif

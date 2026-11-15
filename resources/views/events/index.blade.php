@@ -2,9 +2,14 @@
 
 <x-app-layout :title="$isAdvisor ? 'My Events' : 'Events'">
     <x-slot name="header">{{ $isAdvisor ? 'My Events' : 'Events' }}</x-slot>
-    @if ($isAdvisor)
-        <x-slot name="actions"><a href="{{ route('events.create') }}"><x-primary-button type="button">+ New event</x-primary-button></a></x-slot>
-    @endif
+    <x-slot name="actions">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('events.export', request()->query()) }}"><x-secondary-button type="button">Export CSV</x-secondary-button></a>
+            @if ($isAdvisor)
+                <a href="{{ route('events.create') }}"><x-primary-button type="button">+ New event</x-primary-button></a>
+            @endif
+        </div>
+    </x-slot>
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
@@ -21,6 +26,7 @@
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            <x-date-range />
             <x-primary-button>Filter</x-primary-button>
         </form>
 

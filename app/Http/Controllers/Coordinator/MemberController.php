@@ -10,27 +10,55 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use App\Support\Csv;
+use App\Support\DateFilter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MemberController extends Controller
 {
     public function index(Request $request): View
     {
-        $memberships = Membership::with('user')
+        $memberships = $this->filtered($request)->latest()->paginate(10)->withQueryString();
+
+        return view('members.index', [
+            'memberships' => $memberships,
+            'counts' => Membership::selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status'),
+        ]);
+    }
+
+    /** The members list as a CSV file, with the same search and filters as the page. */
+    public function export(Request $request): StreamedResponse
+    {
+        $rows = $this->filtered($request)->latest()->get()->map(fn (Membership $m) => [
+            $m->user->name,
+            $m->user->student_id,
+            $m->user->programme,
+            $m->user->email,
+            ucfirst($m->status),
+            $m->created_at->format('Y-m-d'),
+            $m->reviewer?->name,
+            $m->reviewed_at?->format('Y-m-d'),
+        ]);
+
+        return Csv::download(
+            'members-'.now()->format('Ymd').'.csv',
+            ['Name', 'Student ID', 'Programme', 'Email', 'Status', 'Applied on', 'Reviewed by', 'Reviewed on'],
+            $rows,
+        );
+    }
+
+    private function filtered(Request $request)
+    {
+        $query = Membership::with('user', 'reviewer')
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = '%'.$request->q.'%';
                 $q->whereHas('user', fn ($u) => $u->where('name', 'like', $term)
                     ->orWhere('student_id', 'like', $term)
                     ->orWhere('programme', 'like', $term));
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            });
 
-        return view('members.index', [
-            'memberships' => $memberships,
-            'counts' => Membership::selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status'),
-        ]);
+        return DateFilter::apply($query, $request, 'created_at');
     }
 
     public function show(Membership $membership): View

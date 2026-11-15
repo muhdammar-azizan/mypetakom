@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Support\DateFilter;
 
 class MeritClaimController extends Controller
 {
@@ -31,11 +32,15 @@ class MeritClaimController extends Controller
 
         $counts = (clone $base)->get()->countBy('status');
 
+        $term = '%'.$request->q.'%';
+
         $claims = (clone $base)
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
+                ->whereHas('event', fn ($e) => $e->where('title', 'like', $term))
+                ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $term)->orWhere('student_id', 'like', $term))));
+
+        $claims = DateFilter::apply($claims, $request, 'created_at')->latest()->paginate(10)->withQueryString();
 
         return view('merit-claims.index', ['claims' => $claims, 'counts' => $counts]);
     }
