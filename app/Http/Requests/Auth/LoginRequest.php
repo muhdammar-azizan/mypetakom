@@ -51,15 +51,19 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Check the login and password and return the user, WITHOUT logging them in.
+     * The controller decides whether a second step (two-factor) comes before the login.
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function verifyCredentials(): User
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->resolveEmail(), 'password' => $this->string('password')->toString()], $this->boolean('remember'))) {
+        $provider = Auth::guard()->getProvider();
+        $user = $provider->retrieveByCredentials(['email' => $this->resolveEmail()]);
+
+        if (! $user || ! $provider->validateCredentials($user, ['password' => $this->string('password')->toString()])) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -67,15 +71,25 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::user()->isDeactivated()) {
-            Auth::logout();
-
+        if ($user->isDeactivated()) {
             throw ValidationException::withMessages([
                 'login' => 'This account has been deactivated. Contact the Petakom Coordinator.',
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        return $user;
+    }
+
+    /**
+     * Check the credentials and log the user in (accounts without two-factor).
+     *
+     * @throws ValidationException
+     */
+    public function authenticate(): void
+    {
+        Auth::login($this->verifyCredentials(), $this->boolean('remember'));
     }
 
     /**

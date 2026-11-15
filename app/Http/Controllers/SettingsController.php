@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\User;
+use App\Services\TwoFactor;
 use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,10 +16,27 @@ class SettingsController extends Controller
 {
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
         return view('settings.edit', [
-            'user' => $request->user(),
-            'deleteBlocked' => $this->deleteBlockedReason($request->user()),
+            'user' => $user,
+            'deleteBlocked' => $this->deleteBlockedReason($user),
+            'twoFactor' => $user->isStudent() ? null : $this->twoFactorState($user, app(TwoFactor::class)),
         ]);
+    }
+
+    /** What the two-factor card shows: off, a setup waiting for its first code, or on. */
+    private function twoFactorState(User $user, TwoFactor $twoFactor): array
+    {
+        if ($user->hasTwoFactorEnabled()) {
+            return ['state' => 'on', 'codes_left' => $twoFactor->recoveryCodesLeft($user)];
+        }
+
+        if ($user->two_factor_secret) {
+            return ['state' => 'setup', 'qr' => $twoFactor->qrSvg($user), 'key' => $twoFactor->readableKey($user)];
+        }
+
+        return ['state' => 'off'];
     }
 
     /** Notification and privacy switches. */

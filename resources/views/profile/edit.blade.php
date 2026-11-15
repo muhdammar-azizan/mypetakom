@@ -171,6 +171,9 @@
                 <dl class="flex flex-col gap-3 text-[13.5px]">
                     <div class="flex justify-between gap-3"><dt class="text-slate-500">Member since</dt><dd class="font-medium text-slate-800">{{ $user->created_at->format('d M Y') }}</dd></div>
                     <div class="flex justify-between items-center gap-3"><dt class="text-slate-500">E-mail</dt><dd>@if ($user->hasVerifiedEmail())<x-badge color="green">Verified</x-badge>@else<x-badge color="gold">Not verified</x-badge>@endif</dd></div>
+                    @unless ($isStudent)
+                        <div class="flex justify-between items-center gap-3"><dt class="text-slate-500">Two-factor</dt><dd>@if ($user->hasTwoFactorEnabled())<x-badge color="green">On</x-badge>@else<x-badge color="gray">Off</x-badge>@endif</dd></div>
+                    @endunless
                     <div class="flex justify-between gap-3"><dt class="text-slate-500">Last login</dt><dd class="font-medium text-slate-800">{{ $user->last_login_at?->diffForHumans() ?? '-' }}</dd></div>
                     <div class="flex justify-between items-center gap-3"><dt class="text-slate-500">Status</dt><dd><x-badge color="green">Active</x-badge></dd></div>
                 </dl>

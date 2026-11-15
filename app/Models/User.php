@@ -51,6 +51,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'show_on_leaderboard' => true,
     ];
 
+    /** True once the user has proved their authenticator app works. A half-finished setup does not count. */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null && $this->two_factor_secret !== null;
+    }
+
     /**
      * A deactivated account gets no reset link. The caller shows the same message either way,
      * so nobody can tell from the page whether an account exists or is deactivated.
@@ -162,6 +168,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -175,6 +183,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'deactivated_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',          // encrypted in the database
+            'two_factor_recovery_codes' => 'array',      // hashes only
+            'two_factor_confirmed_at' => 'datetime',
             'notify_in_app' => 'boolean',
             'notify_email' => 'boolean',
             'show_on_leaderboard' => 'boolean',

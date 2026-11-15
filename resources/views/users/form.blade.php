@@ -73,5 +73,18 @@
                 <x-primary-button>{{ $editing ? 'Save Changes' : 'Create Account' }}</x-primary-button>
             </div>
         </form>
+
+        @if ($editing && $account->hasTwoFactorEnabled())
+            <div class="mt-6 pt-5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                <div class="text-sm text-slate-600">
+                    <span class="font-semibold text-slate-800">Two-factor sign-in is on.</span>
+                    If this person lost their phone and recovery codes, reset it. They can set it up again afterwards.
+                </div>
+                <form method="POST" action="{{ route('users.two-factor.reset', $account) }}" onsubmit="return confirm('Reset two-factor sign-in for {{ e($account->name) }}?')">
+                    @csrf
+                    <x-secondary-button>Reset two-factor</x-secondary-button>
+                </form>
+            </div>
+        @endif
     </x-card>
 </x-app-layout>

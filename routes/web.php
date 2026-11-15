@@ -18,6 +18,7 @@ use App\Http\Controllers\MeritController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,6 +47,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences');
     Route::delete('/settings/account', [SettingsController::class, 'destroy'])->name('settings.account.destroy');
+
+    // Two-factor sign-in: staff only
+    Route::middleware('role:advisor,coordinator')->prefix('settings/two-factor')->name('two-factor.')->group(function () {
+        Route::post('/', [TwoFactorController::class, 'start'])->name('start');
+        Route::post('/confirm', [TwoFactorController::class, 'confirm'])->name('confirm');
+        Route::post('/cancel', [TwoFactorController::class, 'cancel'])->name('cancel');
+        Route::post('/recovery-codes', [TwoFactorController::class, 'regenerate'])->name('recovery');
+        Route::delete('/', [TwoFactorController::class, 'disable'])->name('disable');
+    });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -145,6 +155,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/import', [StudentImportController::class, 'store'])->name('users.import.store');
         Route::resource('users', UserController::class)->except('show');
         Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+        Route::post('/users/{user}/two-factor/reset', [UserController::class, 'resetTwoFactor'])->name('users.two-factor.reset');
 
         Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

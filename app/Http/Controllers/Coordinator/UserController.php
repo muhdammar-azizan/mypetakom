@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TwoFactor;
 use App\Support\Activity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,6 +80,17 @@ class UserController extends Controller
         Activity::log($user->isDeactivated() ? 'user.deactivated' : 'user.activated', ($user->isDeactivated() ? 'Deactivated' : 'Activated').' the account of '.$user->name.'.', $user);
 
         return back()->with('toast', $user->isDeactivated() ? 'Account deactivated.' : 'Account activated.');
+    }
+
+    /** For staff who lost their phone and their recovery codes. They can set two-factor up again afterwards. */
+    public function resetTwoFactor(User $user, TwoFactor $twoFactor): RedirectResponse
+    {
+        if ($user->two_factor_secret) {
+            $twoFactor->disable($user);
+            Activity::log('user.two_factor_reset', 'Reset two-factor sign-in of '.$user->name.'.', $user);
+        }
+
+        return back()->with('toast', 'Two-factor sign-in was reset for '.$user->name.'.');
     }
 
     public function destroy(Request $request, User $user): RedirectResponse

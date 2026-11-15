@@ -52,8 +52,8 @@ class ActivityLog extends Model
     public function getColorAttribute(): string
     {
         return match (true) {
-            str_ends_with($this->action, 'rejected'), str_ends_with($this->action, 'deleted'), str_ends_with($this->action, 'deactivated'), str_ends_with($this->action, 'removed') => 'red',
-            str_ends_with($this->action, 'approved'), str_ends_with($this->action, 'created'), str_ends_with($this->action, 'activated'), str_ends_with($this->action, 'added') => 'green',
+            str_ends_with($this->action, 'rejected'), str_ends_with($this->action, 'deleted'), str_ends_with($this->action, 'deactivated'), str_ends_with($this->action, 'removed'), str_ends_with($this->action, 'disabled'), str_ends_with($this->action, 'reset') => 'red',
+            str_ends_with($this->action, 'approved'), str_ends_with($this->action, 'created'), str_ends_with($this->action, 'activated'), str_ends_with($this->action, 'added'), str_ends_with($this->action, 'enabled') => 'green',
             default => 'brand',
         };
     }

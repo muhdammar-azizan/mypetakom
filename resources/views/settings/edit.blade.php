@@ -80,6 +80,10 @@
             </form>
         </x-card>
 
+        @if ($twoFactor)
+            @include('settings._two-factor')
+        @endif
+
         {{-- Delete account --}}
         <x-card title="Delete account" subtitle="This cannot be undone.">
             @if ($deleteBlocked)

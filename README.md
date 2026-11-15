@@ -91,7 +91,7 @@ Defined in `config/merit.php`.
 - Role access is enforced by the `role:` middleware on every route group, and by policies (`EventPolicy`, `AttendanceSlotPolicy`, `MeritClaimPolicy`) for per-record access.
 - Student cards, approval letters and claim letters are stored on the private disk and served only through authorised routes.
 - Deactivated accounts cannot log in and are logged out of active sessions.
-- Login is rate limited; public check-in is throttled (20 per minute).
+- Login is rate limited; public check-in is throttled (20 per minute). Advisors and coordinators can turn on **two-factor sign-in** (authenticator app, single-use recovery codes). The secret is encrypted in the database, recovery codes are stored as hashes, a code cannot be used twice, and a coordinator can reset a locked-out colleague (or run `php artisan two-factor:disable <email>` if no other coordinator can).
 - All forms use CSRF tokens; uploads are validated by type and size.
 - Important actions (approvals, rejections, deletions, account changes) are written to an audit trail that only the coordinator can read (`Activity Log`). The actor's name is copied into each row, so it survives account deletion.
 - `tests/Feature/RoleAccessTest.php` checks every protected page against every role.
