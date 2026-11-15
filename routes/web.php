@@ -6,6 +6,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\Coordinator\ActivityLogController;
 use App\Http\Controllers\Coordinator\MemberController;
 use App\Http\Controllers\Coordinator\ReportController;
+use App\Http\Controllers\Coordinator\StudentImportController;
 use App\Http\Controllers\Coordinator\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
@@ -137,6 +138,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{membership}', [MemberController::class, 'destroy'])->name('destroy');
         });
 
+        Route::get('/users/import', [StudentImportController::class, 'create'])->name('users.import');
+        Route::get('/users/import/template', [StudentImportController::class, 'template'])->name('users.import.template');
+        Route::post('/users/import/preview', [StudentImportController::class, 'preview'])->name('users.import.preview');
+        Route::post('/users/import/cancel', [StudentImportController::class, 'cancel'])->name('users.import.cancel');
+        Route::post('/users/import', [StudentImportController::class, 'store'])->name('users.import.store');
         Route::resource('users', UserController::class)->except('show');
         Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 

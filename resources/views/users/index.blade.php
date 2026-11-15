@@ -2,7 +2,12 @@
 
 <x-app-layout title="User Accounts">
     <x-slot name="header">User Accounts</x-slot>
-    <x-slot name="actions"><a href="{{ route('users.create') }}"><x-primary-button type="button">+ New account</x-primary-button></a></x-slot>
+    <x-slot name="actions">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('users.import') }}"><x-secondary-button type="button">Import students (CSV)</x-secondary-button></a>
+            <a href="{{ route('users.create') }}"><x-primary-button type="button">+ New account</x-primary-button></a>
+        </div>
+    </x-slot>
 
     <x-card class="p-0 overflow-hidden">
         <form method="GET" class="flex flex-wrap gap-3 p-4 border-b border-slate-200">
