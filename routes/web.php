@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceSlotController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\Coordinator\ActivityLogController;
 use App\Http\Controllers\Coordinator\MemberController;
@@ -34,6 +35,7 @@ Route::get('/checkin/{token}', [CheckInController::class, 'show'])->name('checki
 Route::post('/checkin/{token}', [CheckInController::class, 'store'])->middleware('throttle:20,1')->name('checkin.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');

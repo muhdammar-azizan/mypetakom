@@ -19,7 +19,7 @@ Built with Laravel 12, Blade, Tailwind CSS, Alpine.js and SQLite.
 3. **Attendance**: time-windowed slots with a QR code (optionally rotating every 30 seconds, so a photo of the QR cannot be shared with people who are not at the venue), public check-in that checks student ID, password, approved membership, the time window and the student's GPS distance to the venue (Haversine).
 4. **Merit**: scores by event level and role (`config/merit.php`), merit awarded automatically and idempotently from approved applications, merit claims for missing merit (draft, submitted, approved or rejected), student merit page and public merit QR.
 
-Also: in-app notifications (bell in the topbar), custom error pages, and Chart.js dashboards with an accessible "View as table" for each chart.
+Also: a month calendar of events for every role, in-app notifications (bell in the topbar), custom error pages, and Chart.js dashboards with an accessible "View as table" for each chart.
 
 ## How the modules fit together
 
