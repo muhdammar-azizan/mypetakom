@@ -1,0 +1,36 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-CYzYVd0C.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-QrjD1Kh5.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/charts.js",
+      "resources/js/avatar-crop.js"
+    ]
+  },
+  "resources/js/avatar-crop.js": {
+    "file": "assets/avatar-crop-Du0oMb-b.js",
+    "name": "avatar-crop",
+    "src": "resources/js/avatar-crop.js",
+    "isDynamicEntry": true,
+    "css": [
+      "assets/avatar-crop-D0aDPu-n.css"
+    ]
+  },
+  "resources/js/charts.js": {
+    "file": "assets/charts-DZtGlobs.js",
+    "name": "charts",
+    "src": "resources/js/charts.js",
+    "isDynamicEntry": true
+  }
+}
